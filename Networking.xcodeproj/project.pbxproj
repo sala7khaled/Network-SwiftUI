@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		4EDE2DB22F5318C40061C9E7 /* Network.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Network.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EDE2DB22F5318C40061C9E7 /* Networking.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Networking.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,7 +40,7 @@
 		4EDE2DB32F5318C40061C9E7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4EDE2DB22F5318C40061C9E7 /* Network.app */,
+				4EDE2DB22F5318C40061C9E7 /* Networking.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4EDE2DB12F5318C40061C9E7 /* Network */ = {
+		4EDE2DB12F5318C40061C9E7 /* Networking */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4EDE2DBD2F5318C50061C9E7 /* Build configuration list for PBXNativeTarget "Network" */;
+			buildConfigurationList = 4EDE2DBD2F5318C50061C9E7 /* Build configuration list for PBXNativeTarget "Networking" */;
 			buildPhases = (
 				4EDE2DAE2F5318C40061C9E7 /* Sources */,
 				4EDE2DAF2F5318C40061C9E7 /* Frameworks */,
@@ -63,11 +63,11 @@
 			fileSystemSynchronizedGroups = (
 				4EDE2DB42F5318C40061C9E7 /* Network */,
 			);
-			name = Network;
+			name = Networking;
 			packageProductDependencies = (
 			);
 			productName = Network;
-			productReference = 4EDE2DB22F5318C40061C9E7 /* Network.app */;
+			productReference = 4EDE2DB22F5318C40061C9E7 /* Networking.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4EDE2DAD2F5318C40061C9E7 /* Build configuration list for PBXProject "Network" */;
+			buildConfigurationList = 4EDE2DAD2F5318C40061C9E7 /* Build configuration list for PBXProject "Networking" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4EDE2DB12F5318C40061C9E7 /* Network */,
+				4EDE2DB12F5318C40061C9E7 /* Networking */,
 			);
 		};
 /* End PBXProject section */
@@ -313,7 +313,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4EDE2DAD2F5318C40061C9E7 /* Build configuration list for PBXProject "Network" */ = {
+		4EDE2DAD2F5318C40061C9E7 /* Build configuration list for PBXProject "Networking" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4EDE2DBB2F5318C50061C9E7 /* Debug */,
@@ -322,7 +322,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4EDE2DBD2F5318C50061C9E7 /* Build configuration list for PBXNativeTarget "Network" */ = {
+		4EDE2DBD2F5318C50061C9E7 /* Build configuration list for PBXNativeTarget "Networking" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4EDE2DBE2F5318C50061C9E7 /* Debug */,
