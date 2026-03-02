@@ -26,40 +26,20 @@ class LoginViewModel: ObservableObject {
     }
     
     // MARK: - Load Users
-//    func fetchUsers() async {
-//        
-//        isLoading = true
-//        
-//        let result = await network.call(AuthService.getUsers)
-//        
-//        isLoading = false
-//        
-//        switch result {
-//        case .success(let response):
-//           
-//            breeds = (response as? BaseResponse<[BreedModel]>)?.data ?? []
-//            
-//        case .failure(let error):
-//            errorMessage = error.errorDescription
-//        }
-//    }
-    
-    
     func fetchUsers() async {
         
         isLoading = true
         defer { isLoading = false }
         
-        let result = await network.call(
-            AuthService.getUsers, responseType: BaseResponse<[BreedModel]>.self
-        )
+        let result = await network.call(service: AuthService.getUsers,
+                                        type: BaseResponse<[BreedModel]>.self)
         
         switch result {
         case .success(let response):
             breeds = response.data ?? []
             
         case .failure(let error):
-            errorMessage = error.message
+            errorMessage = error.errorDescription
         }
     }
 }

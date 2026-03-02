@@ -37,7 +37,7 @@ enum APIError: LocalizedError {
     case backend(Fail)
     case unknown(Error)
     
-    var message: String? {
+    var errorDescription: String? {
         switch self {
         case .url:
             return "Invalid URL link."

@@ -8,7 +8,15 @@
 import Foundation
 import SystemConfiguration
 
-final class Network {
+
+// MARK: - Protocol
+protocol NetworkProtocol {
+    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) async -> Result<T, APIError>
+}
+
+
+// MARK: - Network
+final class Network: NetworkProtocol {
     
     // MARK: - Properties
     private let session: URLSession
@@ -20,10 +28,11 @@ final class Network {
         self.session = session
     }
     
-    // MARK: - Request
-    func call<T: Decodable>(_ service: ServiceProtocol, responseType: T.Type) async -> Result<T, APIError> {
+    // MARK: - Call
+    @MainActor
+    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) async -> Result<T, APIError> {
         do {
-            let result = try await request(service, responseType: responseType)
+            let result: T = try await request(service)
             return .success(result)
         } catch let error as APIError {
             return .failure(error)
@@ -32,7 +41,8 @@ final class Network {
         }
     }
     
-    private func request<T: Decodable>(_ service: ServiceProtocol, responseType: T.Type) async throws -> T {
+    // MARK: - Request
+    private func request<T: Decodable>(_ service: ServiceProtocol) async throws -> T {
         
         let policy = urlCachePolicy(service.method == .GET)
         guard let request = URLRequest(service: service, cachePolicy: policy, timeoutInterval: requestTime) else {
@@ -49,14 +59,11 @@ final class Network {
             throw APIError.request
         }
         
-        return try handleResponse(data: data, response: httpResponse)
+        return try handle(response: httpResponse, data: data)
     }
-}
-
-// MARK: - Extensions
-private extension Network {
     
-    func handleResponse<T: Decodable>(data: Data?, response: HTTPURLResponse) throws -> T {
+    // MARK: - Handle
+    private func handle<T: Decodable>(response: HTTPURLResponse, data: Data?) throws -> T {
         guard let apiData = data else { throw APIError.request }
         
         switch response.statusCode {
@@ -78,8 +85,10 @@ private extension Network {
             throw APIError.backend(fail)
         }
     }
-    
-    // MARK: - Cache Policy
+}
+
+// MARK: - Extensions
+private extension Network {
     private func urlCachePolicy(_ isCache: Bool) -> URLRequest.CachePolicy {
         online = ReachabilityManager.isOnline()
         
