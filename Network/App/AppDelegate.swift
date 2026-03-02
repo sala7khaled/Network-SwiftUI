@@ -16,7 +16,7 @@ struct AppDelegate: App {
     
     var body: some Scene {
         WindowGroup {
-            MainView(network: Network())
+            MainView()
         }
     }
 }

@@ -18,28 +18,30 @@ class LoginViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     // MARK: - Properties
-    private let network: Network
-    
-    // MARK: - Init
-    init(network: Network) {
-        self.network = network
-    }
+    private let authRepo = AuthRepo()
+    private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Load Users
-    func fetchUsers() async {
+    func fetchUsers() {
         
         isLoading = true
-        defer { isLoading = false }
+        errorMessage = nil
         
-        let result = await network.call(service: AuthService.getUsers,
-                                        type: BaseResponse<[BreedModel]>.self)
+//        network.call(service: AuthService.getUsers,
+//                     type: BaseResponse<[BreedModel]>.self)
         
-        switch result {
-        case .success(let response):
-            breeds = response.data ?? []
-            
-        case .failure(let error):
-            errorMessage = error.errorDescription
+        authRepo.getUsers()
+        .sink { completion in
+            switch completion {
+            case .finished:
+                self.isLoading = false
+                break
+            case .failure(let error):
+                self.errorMessage = error.errorDescription
+            }
+        } receiveValue: { response in
+            self.breeds = response.data ?? []
         }
+        .store(in: &cancellables)
     }
 }

@@ -7,11 +7,12 @@
 
 import Foundation
 import SystemConfiguration
+import Combine
 
 
 // MARK: - Protocol
 protocol NetworkProtocol {
-    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) async -> Result<T, APIError>
+    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) -> AnyPublisher<T, APIError>
 }
 
 
@@ -29,39 +30,39 @@ final class Network: NetworkProtocol {
     }
     
     // MARK: - Call
-    @MainActor
-    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) async -> Result<T, APIError> {
-        do {
-            let result: T = try await request(service)
-            return .success(result)
-        } catch let error as APIError {
-            return .failure(error)
-        } catch {
-            return .failure(.unknown(error))
-        }
-    }
-    
-    // MARK: - Request
-    private func request<T: Decodable>(_ service: ServiceProtocol) async throws -> T {
+    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) -> AnyPublisher<T, APIError> {
         
         let policy = urlCachePolicy(service.method == .GET)
         guard let request = URLRequest(service: service, cachePolicy: policy, timeoutInterval: requestTime) else {
-            throw APIError.url
+            return Combine.Fail<T, APIError>(error: APIError.url)
+                .eraseToAnyPublisher()
         }
         
-        let (data, response) = try await session.data(for: request)
-        
-        #if DEBUG
-        Console.log(request, service, request.httpBody, data, response)
-        #endif
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.request
-        }
-        
-        return try handle(response: httpResponse, data: data)
+        return session
+            .dataTaskPublisher(for: request)
+            .subscribe(on: DispatchQueue.global(qos: .background))
+            .tryMap { data, response -> T in
+                
+                guard let response = response as? HTTPURLResponse else { throw APIError.request }
+                
+                #if DEBUG
+                Console.log(request, service, data, response.statusCode)
+                #endif
+                
+                return try self.handle(response: response, data: data)
+            }
+            .mapError { error -> APIError in
+                
+                #if DEBUG
+                Console.logError(error, request, service)
+                #endif
+                
+                if let apiError = error as? APIError { return apiError }
+                return .unknown(error)
+            }
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
-    
     // MARK: - Handle
     private func handle<T: Decodable>(response: HTTPURLResponse, data: Data?) throws -> T {
         guard let apiData = data else { throw APIError.request }

@@ -9,20 +9,14 @@ import SwiftUI
 
 struct MainView: View {
     
-    @StateObject private var viewModel: LoginViewModel
-    
-    init(network: Network) {
-        _viewModel = StateObject(
-            wrappedValue: LoginViewModel(network: network)
-        )
-    }
+    @StateObject private var viewModel = LoginViewModel()
     
     var body: some View {
         NavigationView {
             content
                 .navigationTitle("Users")
                 .task {
-                    await viewModel.fetchUsers()
+                    viewModel.fetchUsers()
                 }
         }
     }
@@ -41,7 +35,7 @@ struct MainView: View {
                 
                 Button("Retry") {
                     Task {
-                        await viewModel.fetchUsers()
+                        viewModel.fetchUsers()
                     }
                 }
             }
@@ -63,5 +57,5 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView(network: Network())
+    MainView()
 }

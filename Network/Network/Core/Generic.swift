@@ -21,7 +21,7 @@ struct BaseResponse<T: Decodable>: Decodable {
 
 // MARK: - Fail
 struct Fail: Decodable {
-    let message: String?
+    let error: String?
 }
 
 
@@ -30,7 +30,7 @@ enum APIError: LocalizedError {
     
     case url
     case request
-    case network
+//    case network
     case parsing
     case unauthorized
     case server(_ code: Int)
@@ -43,8 +43,8 @@ enum APIError: LocalizedError {
             return "Invalid URL link."
         case .request:
             return "Network request failed."
-        case .network:
-            return "No internet connection."
+//        case .network:
+//            return "No internet connection."
         case .parsing:
             return "Failed to decode response."
         case .unauthorized:
@@ -52,7 +52,7 @@ enum APIError: LocalizedError {
         case .server(let code):
             return "Server error with status code: \(code)"
         case .backend(let fail):
-            return fail.message
+            return fail.error
         case .unknown(let error):
             return error.localizedDescription
         }

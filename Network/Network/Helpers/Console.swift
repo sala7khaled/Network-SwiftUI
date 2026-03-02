@@ -9,43 +9,46 @@ import Foundation
 
 open class Console {
     
-    static func log(_ request: URLRequest, _ service: ServiceProtocol, _ body: Data?, _ data: Data?, _ response: URLResponse?) {
+    static func log(_ request: URLRequest,
+                    _ service: ServiceProtocol,
+//                    _ bodyData: Data?,
+                    _ responseData: Data?,
+                    _ statusCode: Int) {
         
-        let httpResponse = response as? HTTPURLResponse
-        let urlString = request.url?.absoluteString ?? service.url + service.path
+        let url = request.url?.absoluteString ?? (service.url + service.path)
         let headers = (request.allHTTPHeaderFields ?? [:]).prettyPrint()
-        let statusCode = httpResponse?.statusCode ?? 0
+        let body = request.httpBody.prettyPrint()
+        let response = responseData.prettyPrint()
         
-        let requestBody = body.prettyPrint()
-        let responseBody = data.prettyPrint()
-        
-        info(urlString, headers, requestBody, statusCode, responseBody, nil)
-    }
-    
-    private static func info(_ url: String, _ headers: String, _ body: String, _ statusCode: Int, _ response: String, _ error: Error?) {
-        l("\n🔽 ---------------------------- API Calling Started", "---------------------------- 🔽")
-        l("🌐 Url", url)
-        l("🧩 Headers", "\n\(headers)")
-        l("📦 Body", body == "" ? "{ }" : body)
-        l("#️⃣ Status code", statusCode)
-        l("📂 Response", "\n\(response)")
+        log("\n🔽 ---------------------------- API Calling Started", "---------------------------- 🔽")
+        log("🌐 Url", url)
+        log("🧩 Headers", "\n\(headers)")
+        log("📦 Body", body == "" ? "{ }" : body)
+        log("#️⃣ Status code", statusCode)
+        log("📂 Response", "\n\(response)")
         
         let endPoint = url.replacingOccurrences(of: API.baseUrl, with: "")
         switch statusCode {
         case 200...299:
-            l("🏁 \(endPoint)", "✅ Success")
+            log("🏁 \(endPoint)", "✅ Success")
             break
         default:
-            l("🚩 \(endPoint)", "❌ Error: \(String(describing: error))")
+            log("🚩 \(endPoint)", "❌ Failed")
             break
         }
-        l("🔼 ---------------------------- API Calling Ended", "---------------------------- 🔼\n")
+        log("🔼 ---------------------------- API Calling Ended", "---------------------------- 🔼\n")
     }
     
-    private static func l(_ tag: String, _ text: Any) {
+    private static func log(_ tag: String, _ text: Any) {
         #if DEBUG
         print("\(tag): \(text)")
         #endif
+    }
+    
+    static func logError(_ error: Error?, _ request: URLRequest, _ service: ServiceProtocol) {
+        let url = request.url?.absoluteString ?? (service.url + service.path)
+        let endPoint = url.replacingOccurrences(of: API.baseUrl, with: "")
+        log("🚩 \(endPoint)", "❌ Error: \(error?.localizedDescription ?? "nil")")
     }
 }
 
@@ -76,7 +79,8 @@ extension Headers {
         
         return sorted.map { key, value in
             let paddedKey = key.padding(toLength: maxLength, withPad: " ", startingAt: 0)
-            return "   [\(paddedKey)]  \(value)"
+            let key = paddedKey.contains(APIHeader.authorization) ? "🔐 " : ""
+            return "   [\(paddedKey)]  \(key)\(value)"
         }
         .joined(separator: "\n")
     }

@@ -9,37 +9,42 @@ import UIKit
 
 extension URLRequest {
     
+    fileprivate enum Key {
+        static let appJson = "application/json"
+        static let iOS = "iOS"
+        static let locale = "En"
+        static let version = "CFBundleShortVersionString"
+        static let build = "CFBundleVersion"
+        static let bearer = "Bearer"
+    }
+    
     init?(service: ServiceProtocol, cachePolicy: CachePolicy, timeoutInterval: TimeInterval) {
         guard let components = URLComponents(service: service),
               let url = components.url else { return nil }
         
-        self.init(url: url,
-                  cachePolicy: cachePolicy,
-                  timeoutInterval: timeoutInterval)
+        self.init(url: url, cachePolicy: cachePolicy, timeoutInterval: timeoutInterval)
         
         httpMethod = service.method.rawValue
         
-        // MARK: Default Headers
-        
-        addValue("application/json", forHTTPHeaderField: APIHeader.contentType)
-        addValue("application/json", forHTTPHeaderField: APIHeader.accept)
-        addValue("iOS", forHTTPHeaderField: APIHeader.platform)
-        //        addValue(Localization.shared.currentLanguage().identifier, forHTTPHeaderField: APIHeader.locale)
+        addValue(Key.appJson, forHTTPHeaderField: APIHeader.contentType)
+        addValue(Key.appJson, forHTTPHeaderField: APIHeader.accept)
+        addValue(Key.iOS, forHTTPHeaderField: APIHeader.platform)
+        addValue(Key.locale, forHTTPHeaderField: APIHeader.locale)
         
         if let uuid = UIDevice.current.identifierForVendor?.uuidString {
             addValue(uuid, forHTTPHeaderField: APIHeader.deviceId)
         }
         
-        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+        if let version = Bundle.main.infoDictionary?[Key.version] as? String {
             addValue(version, forHTTPHeaderField: APIHeader.version)
         }
         
-        if let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+        if let build = Bundle.main.infoDictionary?[Key.build] as? String {
             addValue(build, forHTTPHeaderField: APIHeader.build)
         }
         
-        if let token = UserDefaults.standard.string(forKey: "accessToken") {
-            addValue("Bearer \(token)", forHTTPHeaderField: APIHeader.authorization)
+        if let token = UserDefaults.standard.string(forKey: APIHeader.authorization) {
+            addValue("\(Key.bearer) \(token)", forHTTPHeaderField: APIHeader.authorization)
         }
         
         // MARK: Set Headers
