@@ -9,11 +9,11 @@ import SwiftUI
 
 struct MainView: View {
     
-    @StateObject private var viewModel: ViewModel
+    @StateObject private var viewModel: LoginViewModel
     
     init(network: Network) {
         _viewModel = StateObject(
-            wrappedValue: ViewModel(network: network)
+            wrappedValue: LoginViewModel(network: network)
         )
     }
     

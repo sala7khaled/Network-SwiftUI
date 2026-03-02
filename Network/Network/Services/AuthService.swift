@@ -1,6 +1,6 @@
 //
-//  Service.swift
-//  Networking
+//  AuthService.swift
+//  Network
 //
 //  Created by Salah Khaled on 01/03/2026.
 //
@@ -11,6 +11,10 @@ enum AuthService: ServiceProtocol {
     
     case getUsers
     case createUser
+    
+    var url: String {
+        return API.baseUrl
+    }
     
     var path: String {
         switch self {
@@ -50,12 +54,13 @@ enum AuthService: ServiceProtocol {
         }
     }
     
-    var response: Decodable? {
+    var responseType: Decodable.Type {
         switch self {
         case .getUsers:
             return BaseResponse<[BreedModel]>.self
-        case .createUser:
-            return nil
+            
+        default:
+            return EmptyResponse.self
         }
     }
 }

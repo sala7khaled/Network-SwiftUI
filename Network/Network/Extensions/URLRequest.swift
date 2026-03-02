@@ -47,9 +47,9 @@ extension URLRequest {
             addValue($0.value, forHTTPHeaderField: $0.key)
         }
         
-        // MARK: Body Encoding (Safe)
+        // MARK: Body Encoding
         if let body = service.body {
-            httpBody = try? JSONEncoder().encode(AnyEncodable(body))
+            httpBody = try? JSONEncoder().encode(body)
         }
     }
 }

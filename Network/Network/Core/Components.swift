@@ -1,5 +1,5 @@
 //
-//  Endpoint.swift
+//  Components.swift
 //  Network
 //
 //  Created by Salah Khaled on 28/02/2026.
@@ -35,65 +35,11 @@ typealias Parameters = [String: Any]
 
 protocol ServiceProtocol {
     
+    var url: String { get }
     var path: String { get }
     var method: HTTPMethod { get }
     var parameters: Parameters? { get }
     var headers: Headers? { get }
     var body: Encodable? { get }
-    var response: Decodable? { get }
+    var responseType: Decodable.Type { get }
 }
-
-
-// MARK: - Base Response
-struct BaseResponse<T: Decodable>: Decodable {
-    let success: Bool?
-    let message: String?
-    let data: T?
-}
-
-// MARK: - Fail
-struct Fail: Decodable {
-    let message: String?
-}
-
-
-// MARK: - Response
-enum APIResponse<T> {
-    
-    case onSuccess(T)
-    case onFailure(APIError)
-}
-// MARK: - Error
-enum APIError: LocalizedError {
-    
-    case url
-    case request
-    case network
-    case parsing
-    case server(_ code: Int)
-    case unknown(Error)
-    
-    var errorDescription: String? {
-        switch self {
-        case .url:
-            return "Invalid URL link."
-        case .request:
-            return "Network request failed."
-        case .network:
-            return "No internet connection."
-        case .parsing:
-            return "Failed to decode response."
-        case .server(let code):
-            return "Server error with status code: \(code)"
-        case .unknown(let error):
-            return error.localizedDescription
-        }
-    }
-}
-
-//struct APIError {
-//    
-//    var type: APIErrorType
-//    var code: Int? = 0
-//    var message: String?
-//}
