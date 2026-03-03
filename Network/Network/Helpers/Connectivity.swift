@@ -1,5 +1,5 @@
 //
-//  ReachabilityManager.swift
+//  Connectivity.swift
 //  Network
 //
 //  Created by Salah Khaled on 28/02/2026.
@@ -8,7 +8,7 @@
 import SystemConfiguration
 import Network
 
-final class ReachabilityManager {
+final class Connectivity {
     
     // MARK: - Properties
     private static let monitor = NWPathMonitor()

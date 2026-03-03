@@ -32,8 +32,10 @@ final class Network: NetworkProtocol {
     // MARK: - Call
     func call<T: Decodable>(service: ServiceProtocol, type: T.Type) -> AnyPublisher<T, APIError> {
         
-        let policy = urlCachePolicy(service.method == .GET)
-        guard let request = URLRequest(service: service, cachePolicy: policy, timeoutInterval: requestTime) else {
+        guard let request = URLRequest(service: service,
+                                       cachePolicy: cachePolicy(service.method == .GET),
+                                       timeoutInterval: requestTime) else {
+            
             return Combine.Fail<T, APIError>(error: APIError(type: .url))
                 .eraseToAnyPublisher()
         }
@@ -44,6 +46,7 @@ final class Network: NetworkProtocol {
             .tryMap { data, response -> T in
                 
                 guard let response = response as? HTTPURLResponse else { throw APIError(type: .request) }
+                
                 #if DEBUG
                 Console.log(request, service, data, response.statusCode)
                 #endif
@@ -82,7 +85,7 @@ final class Network: NetworkProtocol {
             }
             
         case 401:
-            throw APIError(type: .unauthorized, code: response.statusCode,)
+            throw APIError(type: .unauthorized, code: response.statusCode)
             
         default:
             guard let failResponse = try? JSONDecoder().decode(FailResponse.self, from: apiData) else {
@@ -96,8 +99,8 @@ final class Network: NetworkProtocol {
 
 // MARK: - Extensions
 private extension Network {
-    private func urlCachePolicy(_ isCache: Bool) -> URLRequest.CachePolicy {
-        online = ReachabilityManager.isOnline()
+    private func cachePolicy(_ isCache: Bool) -> URLRequest.CachePolicy {
+        online = Connectivity.isOnline()
         
         return isCache
         ? (online ? .reloadIgnoringCacheData : .returnCacheDataDontLoad)

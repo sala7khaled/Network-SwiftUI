@@ -32,23 +32,18 @@ struct FailResponse: Decodable {
 // MARK: - API Error
 struct APIError: Error {
     var type: APIErrorType
-    var code: Int? = 0
+    var code: Int = 0
     var message: String?
     
-    init(type: APIErrorType, code: Int? = nil, message: String? = nil) {
+    init(type: APIErrorType, code: Int = 0, message: String? = nil) {
         self.type = type
         self.code = code
         self.message = message ?? type.localized
     }
     
     func localize() -> String {
-        let message = String.LocalizationValue(self.message ?? "")
-        var localized = String(localized: message)
-        
-        if type == .server, let code {
-            localized.append(" Status code: \(code)")
-        }
-        
+        var localized = String(localized: String.LocalizationValue(message ?? ""))
+        if type == .server { localized += " Status code: \(code)" }
         return localized
     }
 }

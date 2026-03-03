@@ -8,7 +8,6 @@
 import Foundation
 
 open class Console {
-    
     static private var separator = String(repeating: "—", count: 124)
     
     static func log(_ request: URLRequest,
@@ -45,7 +44,7 @@ open class Console {
         let endPoint = url.replacingOccurrences(of: API.baseUrl, with: "")
         
         print("\n" + separator)
-        log("❌ \(endPoint)", "\(error.type)".capitalized + " error (code: \(error.code ?? 0)) \n   \(error.message ?? "")")
+        log("❌ \(endPoint)", "\(error.type)".capitalized + " error (code: \(error.code)) \n   \(error.message ?? "")")
         print(separator)
     }
     
