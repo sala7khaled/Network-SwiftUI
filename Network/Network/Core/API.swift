@@ -41,11 +41,5 @@ final class Api {
      
     // MARK: - AUTH
     let AUTH_BREEDS = "breeds"
-    let AUTH_VERIFY_EMAIL = "breeds"
-    
-    
-    // MARK: - DOCOTR
-//    let MOVIE_DETAIL = "movie/"
-    
-    
+    /// add more api endpoints
 }

@@ -11,7 +11,7 @@ import SwiftUI
 struct AppDelegate: App {
     
     init() {
-        ReachabilityManager.startMonitoring()
+        ReachabilityManager.start()
     }
     
     var body: some Scene {

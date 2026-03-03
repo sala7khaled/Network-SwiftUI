@@ -20,41 +20,50 @@ struct BaseResponse<T: Decodable>: Decodable {
 
 
 // MARK: - Fail
-struct Fail: Decodable {
-    let error: String?
+struct FailResponse: Decodable {
+    let message: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case message = "error"
+    }
 }
 
 
 // MARK: - API Error
-enum APIError: LocalizedError {
+struct APIError: Error {
+    var type: APIErrorType
+    var code: Int? = 0
+    var message: String?
     
+    init(type: APIErrorType, code: Int? = nil, message: String? = nil) {
+        self.type = type
+        self.code = code
+        self.message = message ?? type.localized
+    }
+    
+    func localize() -> String {
+        let message = String.LocalizationValue(self.message ?? "")
+        var localized = String(localized: message)
+        
+        if type == .server, let code {
+            localized.append(" Status code: \(code)")
+        }
+        
+        return localized
+    }
+}
+
+enum APIErrorType: String {
     case url
     case request
-//    case network
+    case network
     case parsing
     case unauthorized
-    case server(_ code: Int)
-    case backend(Fail)
-    case unknown(Error)
+    case server
+    case backend
+    case unknown
     
-    var errorDescription: String? {
-        switch self {
-        case .url:
-            return "Invalid URL link."
-        case .request:
-            return "Network request failed."
-//        case .network:
-//            return "No internet connection."
-        case .parsing:
-            return "Failed to decode response."
-        case .unauthorized:
-            return "Session expired, please login again."
-        case .server(let code):
-            return "Server error with status code: \(code)"
-        case .backend(let fail):
-            return fail.error
-        case .unknown(let error):
-            return error.localizedDescription
-        }
+    var localized: String {
+        "error.\(rawValue)"
     }
 }

@@ -15,7 +15,7 @@ class LoginViewModel: ObservableObject {
     // MARK: - Published
     @Published var breeds: [BreedModel] = []
     @Published var isLoading = false
-    @Published var errorMessage: String?
+    @Published var error: APIError?
     
     // MARK: - Properties
     private let authRepo = AuthRepo()
@@ -24,20 +24,21 @@ class LoginViewModel: ObservableObject {
     // MARK: - Load Users
     func fetchUsers() {
         
+        breeds = []
         isLoading = true
-        errorMessage = nil
+        error = nil
         
 //        network.call(service: AuthService.getUsers,
 //                     type: BaseResponse<[BreedModel]>.self)
         
-        authRepo.getUsers()
+        authRepo.getUsers(breed: BreedModel(id: "1", type: "222", attributes: AttributesModel(name: "1313", description: "!313", life: nil, maleWeight: nil, femaleWeight: nil, hypoallergenic: true)))
         .sink { completion in
+            self.isLoading = false
             switch completion {
             case .finished:
-                self.isLoading = false
                 break
             case .failure(let error):
-                self.errorMessage = error.errorDescription
+                self.error = error
             }
         } receiveValue: { response in
             self.breeds = response.data ?? []

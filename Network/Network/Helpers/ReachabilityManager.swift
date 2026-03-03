@@ -10,13 +10,14 @@ import Network
 
 final class ReachabilityManager {
     
+    // MARK: - Properties
     private static let monitor = NWPathMonitor()
     private static let queue = DispatchQueue(label: "ReachabilityMonitor")
     private static var isMonitoring = false
     private static var currentStatus: NWPath.Status = .requiresConnection
     
-    // Start monitoring once
-    static func startMonitoring() {
+    // MARK: - Methods
+    static func start() {
         guard !isMonitoring else { return }
         
         monitor.pathUpdateHandler = { path in
@@ -27,7 +28,6 @@ final class ReachabilityManager {
         isMonitoring = true
     }
     
-    // Simple check
     static func isOnline() -> Bool {
         return currentStatus == .satisfied
     }

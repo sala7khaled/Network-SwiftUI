@@ -9,14 +9,14 @@ import Foundation
 import Combine
 
 protocol AuthRepoProtocol {
-    func getUsers() -> AnyPublisher<BaseResponse<[BreedModel]>, APIError>
+    func getUsers(breed: BreedModel) -> AnyPublisher<BaseResponse<[BreedModel]>, APIError>
 }
 
 class AuthRepo: AuthRepoProtocol {
     let network = Network()
     
-    func getUsers() -> AnyPublisher<BaseResponse<[BreedModel]>, APIError> {
-        return network.call(service: AuthService.getUsers,
+    func getUsers(breed: BreedModel) -> AnyPublisher<BaseResponse<[BreedModel]>, APIError> {
+        return network.call(service: AuthService.getUsers(breed),
                      type: BaseResponse<[BreedModel]>.self)
     }
 }

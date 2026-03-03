@@ -24,7 +24,9 @@ struct AttributesModel: Codable {
     let hypoallergenic: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case name, description, life
+        case name
+        case description
+        case life
         case maleWeight = "male_weight"
         case femaleWeight = "female_weight"
         case hypoallergenic

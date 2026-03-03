@@ -1,0 +1,101 @@
+//
+//  Generic.swift
+//  Networking
+//
+//  Created by Salah Khaled on 03/03/2026.
+//
+
+import Foundation
+
+// MARK: - Data Pretty Print
+extension Data? {
+    
+    func prettyPrint(max: Int = 80) -> String {
+        guard let data = self else { return "{ }" }
+        
+        do {
+            let object = try JSONSerialization.jsonObject(with: data, options: [])
+            let truncatedObject = truncate(object, max: max)
+            
+            let prettyData = try JSONSerialization.data(withJSONObject: truncatedObject,
+                                                        options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+            
+            return String(decoding: prettyData, as: UTF8.self)
+        } catch {
+            return String(decoding: data, as: UTF8.self)
+        }
+    }
+    
+    
+    // MARK: - Truncation
+    private func truncate(_ value: Any, max: Int) -> Any {
+        
+        switch value {
+        case let dict as [String: Any]:
+            return dict.mapValues { truncate($0, max: max) }
+            
+        case let array as [Any]:
+            return array.map { truncate($0, max: max) }
+            
+        case let string as String:
+            if string.count > max {
+                let visible = String(string.prefix(max))
+                let remain = string.count - max
+                return "\(visible)... + (\(remain) chars)"
+            }
+            return string
+        default:
+            return value
+        }
+    }
+}
+
+
+// MARK: - Header Pretty Print
+extension Headers {
+    func prettyPrint() -> String {
+        
+        guard !self.isEmpty else { return "[ ]" }
+        let sorted = self.sorted { $0.key.lowercased() < $1.key.lowercased() }
+        let maxLength = sorted.map { $0.key.count }.max() ?? 0
+        
+        return sorted.map { key, value in
+            let paddedKey = key.padding(toLength: maxLength, withPad: " ", startingAt: 0)
+            let key = paddedKey.contains(APIHeader.authorization) ? "🔐 " : ""
+            return "   [\(paddedKey)]  \(key)\(value)"
+        }
+        .joined(separator: "\n")
+    }
+}
+
+
+// MARK: - String
+extension String {
+    func truncated(_ max: Int) -> String {
+        guard count > max else { return self }
+        
+        let visible = prefix(max)
+        let remain = count - max
+        return "\(visible)... + (\(remain) chars)"
+    }
+}
+
+
+// MARK: - Decoding Error
+extension DecodingError {
+    
+    var errorPath: String {
+        switch self {
+        case .typeMismatch(_, let context),
+             .valueNotFound(_, let context),
+             .keyNotFound(_, let context),
+             .dataCorrupted(let context):
+            
+            let path = context.codingPath.map { $0.stringValue }.joined(separator: " ➡️ ")
+            return "Decoding error at key: \(path) \n   \(context.debugDescription)"
+            
+        @unknown default:
+            return self.localizedDescription
+        }
+    }
+}

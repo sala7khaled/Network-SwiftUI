@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  URLRequest.swift
 //  Network
 //
 //  Created by Salah Khaled on 28/02/2026.
@@ -7,12 +7,13 @@
 
 import UIKit
 
+// MARK: - URLRequest
 extension URLRequest {
     
     fileprivate enum Key {
         static let appJson = "application/json"
         static let iOS = "iOS"
-        static let locale = "En"
+        static let locale = "en"
         static let version = "CFBundleShortVersionString"
         static let build = "CFBundleVersion"
         static let bearer = "Bearer"
@@ -47,14 +48,32 @@ extension URLRequest {
             addValue("\(Key.bearer) \(token)", forHTTPHeaderField: APIHeader.authorization)
         }
         
-        // MARK: Set Headers
+        /// Set Headers
         service.headers?.forEach {
             addValue($0.value, forHTTPHeaderField: $0.key)
         }
         
-        // MARK: Body Encoding
+        /// Body Encoding
         if let body = service.body {
             httpBody = try? JSONEncoder().encode(body)
+        }
+    }
+}
+
+
+// MARK: - URLComponents
+extension URLComponents {
+    
+    init?(service: ServiceProtocol) {
+        guard let baseURL = URL(string: service.url) else { return nil }
+        
+        let url = baseURL.appendingPathComponent(service.path)
+        self.init(url: url, resolvingAgainstBaseURL: false)
+        
+        if let parameters = service.parameters {
+            queryItems = parameters.map {
+                URLQueryItem(name: $0.key, value: "\($0.value)")
+            }
         }
     }
 }

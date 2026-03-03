@@ -9,7 +9,7 @@ import Foundation
 
 enum AuthService: ServiceProtocol {
     
-    case getUsers
+    case getUsers(_ request: BreedModel)
     case createUser
     
     var url: String {

@@ -34,7 +34,7 @@ final class Network: NetworkProtocol {
         
         let policy = urlCachePolicy(service.method == .GET)
         guard let request = URLRequest(service: service, cachePolicy: policy, timeoutInterval: requestTime) else {
-            return Combine.Fail<T, APIError>(error: APIError.url)
+            return Combine.Fail<T, APIError>(error: APIError(type: .url))
                 .eraseToAnyPublisher()
         }
         
@@ -43,8 +43,7 @@ final class Network: NetworkProtocol {
             .subscribe(on: DispatchQueue.global(qos: .background))
             .tryMap { data, response -> T in
                 
-                guard let response = response as? HTTPURLResponse else { throw APIError.request }
-                
+                guard let response = response as? HTTPURLResponse else { throw APIError(type: .request) }
                 #if DEBUG
                 Console.log(request, service, data, response.statusCode)
                 #endif
@@ -53,37 +52,44 @@ final class Network: NetworkProtocol {
             }
             .mapError { error -> APIError in
                 
+                let apiError = (error as? APIError) ?? APIError(type: .unknown, message: error.localizedDescription)
+                
                 #if DEBUG
-                Console.logError(error, request, service)
+                Console.logError(request, apiError)
                 #endif
                 
-                if let apiError = error as? APIError { return apiError }
-                return .unknown(error)
+                return apiError
             }
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
+        
     }
+    
     // MARK: - Handle
     private func handle<T: Decodable>(response: HTTPURLResponse, data: Data?) throws -> T {
-        guard let apiData = data else { throw APIError.request }
+        
+        guard online else { throw APIError(type: .network) }
+        guard let apiData = data else { throw APIError(type: .request, code: response.statusCode) }
         
         switch response.statusCode {
         case 200...299:
             do {
                 return try JSONDecoder().decode(T.self, from: apiData)
+            } catch let decodeError as DecodingError {
+                throw APIError(type: .parsing, code: response.statusCode, message: decodeError.errorPath)
             } catch {
-                throw APIError.parsing
+                throw APIError(type: .parsing, code: response.statusCode)
             }
             
         case 401:
-            throw APIError.unauthorized
+            throw APIError(type: .unauthorized, code: response.statusCode,)
             
         default:
-            guard let fail = try? JSONDecoder().decode(Fail.self, from: apiData) else {
-                throw APIError.server(response.statusCode)
+            guard let failResponse = try? JSONDecoder().decode(FailResponse.self, from: apiData) else {
+                throw APIError(type: .server, code: response.statusCode)
             }
             
-            throw APIError.backend(fail)
+            throw APIError(type: .backend, code: response.statusCode, message: failResponse.message)
         }
     }
 }
@@ -98,3 +104,4 @@ private extension Network {
         : .reloadIgnoringCacheData
     }
 }
+

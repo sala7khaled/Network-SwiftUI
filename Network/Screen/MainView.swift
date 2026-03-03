@@ -14,7 +14,7 @@ struct MainView: View {
     var body: some View {
         NavigationView {
             content
-                .navigationTitle("Users")
+                .navigationTitle(String(localized: "users"))
                 .task {
                     viewModel.fetchUsers()
                 }
@@ -24,33 +24,43 @@ struct MainView: View {
     @ViewBuilder
     private var content: some View {
         
-        if viewModel.isLoading {
-            ProgressView("Loading...")
+        if viewModel.isLoading && viewModel.breeds.isEmpty {
+            ProgressView(String(localized: "loading"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         
-        else if let error = viewModel.errorMessage {
+        else if let error = viewModel.error, viewModel.breeds.isEmpty {
             VStack(spacing: 12) {
-                Text(error)
+                
+                Text(error.localize())
                     .foregroundColor(.red)
                 
-                Button("Retry") {
+                Button(String(localized: "retry")) {
                     Task {
                         viewModel.fetchUsers()
                     }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         
         else {
             List(viewModel.breeds) { breed in
                 VStack(alignment: .leading) {
-                    Text(breed.attributes.name ?? "-")
-                        .font(.headline)
-                    
-                    Text(breed.attributes.description ?? "-")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
+                    if let title = breed.attributes.name {
+                        Text(title)
+                            .font(.headline)
+                    }
+                    if let description = breed.attributes.description {
+                        Text(description)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .lineLimit(3)
+                    }
                 }
+            }
+            .refreshable {
+                viewModel.fetchUsers()
             }
         }
     }
