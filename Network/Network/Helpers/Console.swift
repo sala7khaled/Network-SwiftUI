@@ -11,14 +11,13 @@ open class Console {
     
     static func log(_ request: URLRequest,
                     _ service: ServiceProtocol,
-//                    _ bodyData: Data?,
                     _ responseData: Data?,
                     _ statusCode: Int) {
         
         let url = request.url?.absoluteString ?? (service.url + service.path)
         let headers = (request.allHTTPHeaderFields ?? [:]).prettyPrint()
         let body = request.httpBody.prettyPrint()
-        let response = responseData.prettyPrint()
+        let response = responseData.prettyPrint().truncated(3000)
         
         log("\n🔽 ---------------------------- API Calling Started", "---------------------------- 🔽")
         log("🌐 Url", url)
@@ -39,37 +38,63 @@ open class Console {
         log("🔼 ---------------------------- API Calling Ended", "---------------------------- 🔼\n")
     }
     
-    private static func log(_ tag: String, _ text: Any) {
-        #if DEBUG
-        print("\(tag): \(text)")
-        #endif
-    }
-    
     static func logError(_ error: Error?, _ request: URLRequest, _ service: ServiceProtocol) {
         let url = request.url?.absoluteString ?? (service.url + service.path)
         let endPoint = url.replacingOccurrences(of: API.baseUrl, with: "")
         log("🚩 \(endPoint)", "❌ Error: \(error?.localizedDescription ?? "nil")")
     }
+    
+    private static func log(_ tag: String, _ text: Any) {
+        #if DEBUG
+        print("\(tag): \(text)")
+        #endif
+    }
 }
 
 
-// MARK: - Pretty Print
+// MARK: - Data Pretty Print
 extension Data? {
-    func prettyPrint() -> String {
+    
+    func prettyPrint(max: Int = 80) -> String {
         guard let data = self else { return "{ }" }
         
         do {
             let object = try JSONSerialization.jsonObject(with: data, options: [])
-            let prettyData = try JSONSerialization.data(withJSONObject: object,
-                                                        options: [.prettyPrinted, .sortedKeys])
+            let truncatedObject = truncate(object, max: max)
+            
+            let prettyData = try JSONSerialization.data(withJSONObject: truncatedObject,
+                                                        options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+            
             return String(decoding: prettyData, as: UTF8.self)
         } catch {
             return String(decoding: data, as: UTF8.self)
         }
     }
+    
+    // MARK: - Truncation
+    private func truncate(_ value: Any, max: Int) -> Any {
+        
+        switch value {
+        case let dict as [String: Any]:
+            return dict.mapValues { truncate($0, max: max) }
+            
+        case let array as [Any]:
+            return array.map { truncate($0, max: max) }
+            
+        case let string as String:
+            if string.count > max {
+                let visible = String(string.prefix(max))
+                let remain = string.count - max
+                return "\(visible)... + (\(remain) chars)"
+            }
+            return string
+        default:
+            return value
+        }
+    }
 }
 
-
+// MARK: - Header Pretty Print
 extension Headers {
     func prettyPrint() -> String {
         
@@ -83,5 +108,16 @@ extension Headers {
             return "   [\(paddedKey)]  \(key)\(value)"
         }
         .joined(separator: "\n")
+    }
+}
+
+// MARK: - String
+extension String {
+    func truncated(_ max: Int) -> String {
+        guard count > max else { return self }
+        
+        let visible = prefix(max)
+        let remain = count - max
+        return "\(visible)... + (\(remain) chars)"
     }
 }
