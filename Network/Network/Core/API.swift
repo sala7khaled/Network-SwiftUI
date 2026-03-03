@@ -8,7 +8,7 @@
 import Foundation
 
 /**
- APIConfigurations
+ APIConfiguration
  
  - parameter development: For the application during the development phase.
  - parameter production: For the application during the launching on App store.
@@ -17,7 +17,6 @@ import Foundation
 let API = Api(config: .development)
 
 enum APIConfiguration {
-
     case development
     case production
 }

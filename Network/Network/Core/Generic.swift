@@ -22,9 +22,11 @@ struct BaseResponse<T: Decodable>: Decodable {
 // MARK: - Fail
 struct FailResponse: Decodable {
     let message: String?
+    let code: Int?
     
     enum CodingKeys: String, CodingKey {
         case message = "error"
+        case code = "status"
     }
 }
 

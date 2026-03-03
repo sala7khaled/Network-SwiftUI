@@ -36,36 +36,28 @@ final class Network: NetworkProtocol {
                                        cachePolicy: cachePolicy(service.method == .GET),
                                        timeoutInterval: requestTime) else {
             
-            return Combine.Fail<T, APIError>(error: APIError(type: .url))
-                .eraseToAnyPublisher()
+            return Fail<T, APIError>(error: APIError(type: .url)).eraseToAnyPublisher()
         }
         
         return session
             .dataTaskPublisher(for: request)
             .subscribe(on: DispatchQueue.global(qos: .background))
             .tryMap { data, response -> T in
-                
                 guard let response = response as? HTTPURLResponse else { throw APIError(type: .request) }
                 
-                #if DEBUG
-                Console.log(request, service, data, response.statusCode)
-                #endif
-                
+                /// Success
+                Console.log(service: service, request: request, data: data, code: response.statusCode)
                 return try self.handle(response: response, data: data)
             }
             .mapError { error -> APIError in
                 
+                /// Error
                 let apiError = (error as? APIError) ?? APIError(type: .unknown, message: error.localizedDescription)
-                
-                #if DEBUG
-                Console.logError(request, apiError)
-                #endif
-                
+//                Console.log(service: service, request: request, data: nil, code: apiError.code, error: apiError)
                 return apiError
             }
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
-        
     }
     
     // MARK: - Handle
@@ -92,7 +84,7 @@ final class Network: NetworkProtocol {
                 throw APIError(type: .server, code: response.statusCode)
             }
             
-            throw APIError(type: .backend, code: response.statusCode, message: failResponse.message)
+            throw APIError(type: .backend, code: failResponse.code ?? response.statusCode, message: failResponse.message)
         }
     }
 }
