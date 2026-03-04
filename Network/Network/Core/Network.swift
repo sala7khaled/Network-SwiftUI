@@ -47,7 +47,8 @@ final class Network: NetworkProtocol {
                 
                 /// Success
                 Console.log(service: service, request: request, data: data, code: response.statusCode)
-                return try self.handle(response: response, data: data)
+                return try self.handle(response: response, with: data)
+                
             }
             .mapError { error -> APIError in
                 
@@ -61,7 +62,7 @@ final class Network: NetworkProtocol {
     }
     
     // MARK: - Handle
-    private func handle<T: Decodable>(response: HTTPURLResponse, data: Data?) throws -> T {
+    private func handle<T: Decodable>(response: HTTPURLResponse, with data: Data?) throws -> T {
         
         guard online else { throw APIError(type: .network) }
         guard let apiData = data else { throw APIError(type: .request, code: response.statusCode) }
