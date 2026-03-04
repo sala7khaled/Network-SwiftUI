@@ -21,8 +21,8 @@ final class Network: NetworkProtocol {
     
     // MARK: - Properties
     private let session: URLSession
-    private let requestTime: TimeInterval = 30.0
-    private var online = false
+    private let requestTime: TimeInterval = 30
+    private let decoder = JSONDecoder()
     
     // MARK: - Init
     init(session: URLSession = .shared) {
@@ -64,13 +64,13 @@ final class Network: NetworkProtocol {
     // MARK: - Handle
     private func handle<T: Decodable>(response: HTTPURLResponse, with data: Data?) throws -> T {
         
-        guard online else { throw APIError(type: .network) }
+        guard Connectivity.isOnline() else { throw APIError(type: .network) }
         guard let apiData = data else { throw APIError(type: .request, code: response.statusCode) }
         
         switch response.statusCode {
         case 200...299:
             do {
-                return try JSONDecoder().decode(T.self, from: apiData)
+                return try decoder.decode(T.self, from: apiData)
             } catch let decodeError as DecodingError {
                 throw APIError(type: .parsing, code: response.statusCode, message: decodeError.errorPath)
             } catch {
@@ -81,7 +81,7 @@ final class Network: NetworkProtocol {
             throw APIError(type: .unauthorized, code: response.statusCode)
             
         default:
-            guard let failResponse = try? JSONDecoder().decode(FailResponse.self, from: apiData) else {
+            guard let failResponse = try? decoder.decode(FailResponse.self, from: apiData) else {
                 throw APIError(type: .server, code: response.statusCode)
             }
             
@@ -93,10 +93,8 @@ final class Network: NetworkProtocol {
 // MARK: - Extensions
 private extension Network {
     private func cachePolicy(_ isCache: Bool) -> URLRequest.CachePolicy {
-        online = Connectivity.isOnline()
-        
         return isCache
-        ? (online ? .reloadIgnoringCacheData : .returnCacheDataDontLoad)
+        ? (Connectivity.isOnline() ? .reloadIgnoringCacheData : .returnCacheDataDontLoad)
         : .reloadIgnoringCacheData
     }
 }

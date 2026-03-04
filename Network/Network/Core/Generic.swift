@@ -44,9 +44,8 @@ struct APIError: Error {
     }
     
     func localize() -> String {
-        var localized = String(localized: String.LocalizationValue(message ?? ""))
-        if type == .server { localized += " Status code: \(code)" }
-        return localized
+        let base = String(localized: .init(message ?? ""))
+        return type == .server ? "\(base) Status code: \(code)" : base
     }
 }
 
