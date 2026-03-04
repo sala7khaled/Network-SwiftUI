@@ -28,7 +28,7 @@ final class Api {
     var baseUrl: String {
         switch config {
         case .development:
-            return "https://dogapi.dog/api/v2/2"
+            return "https://dogapi.dog/api/v2/"
         case .production:
             return "https://dogapi.dog/api/v2/"
         }

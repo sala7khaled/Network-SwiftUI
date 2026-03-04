@@ -14,6 +14,7 @@ open class Console {
                     request: URLRequest?,
                     data: Data?,
                     code: Int,
+                    time: TimeInterval = 0,
                     error: APIError? = nil) {
         
         let url = request?.url?.absoluteString ?? (service.url + service.path)
@@ -22,11 +23,11 @@ open class Console {
         let response = data.prettyPrint().truncated(3000)
         
         print("\n" + separator)
-        log("🌐 Url", url)
+        log("🌐 \(request?.httpMethod ?? "")", url)
         log("🧩 Headers", "\n\(headers)")
         log("📦 Body", body == "" ? "{ }" : "\n\(body ?? "")")
         log("#️⃣ Status code", code)
-        log("📂 Response", "\(service.responseType) \n\(response)")
+        log("📂 Response", "Expected: \(service.responseType) Time: \(time) \n\(response)")
         
         
         let endPoint = url.replacingOccurrences(of: API.baseUrl, with: "")
@@ -39,17 +40,22 @@ open class Console {
             break
         }
         print(separator)
-    }
-    
-    static func logError(_ error: APIError) {
-        print("\n" + separator)
-        log("❌ Error", "\(error.type)".capitalized + " (code: \(error.code)) \n   \(error.message ?? "message: nil")")
-        print(separator)
+        
+        // MARK: - Sentry
+        let entry = SentryEntry(url: url, method: request?.httpMethod ?? "", headers: request?.allHTTPHeaderFields ?? [:], code: code, time: time, response: data ?? Data())
+        SentryManager.shared.add(entry)
     }
     
     static func log(_ tag: String, _ text: Any) {
         #if DEBUG
         print("\(tag): \(text)")
         #endif
+    }
+    
+    // MARK: - Error
+    static func logError(_ error: APIError) {
+        print("\n" + separator)
+        log("❌ Error", "\(error.type)".capitalized + " (code: \(error.code)) \n   \(error.message ?? "message: nil")")
+        print(separator)
     }
 }

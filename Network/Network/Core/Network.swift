@@ -39,6 +39,7 @@ final class Network: NetworkProtocol {
             return Fail<T, APIError>(error: APIError(type: .url)).eraseToAnyPublisher()
         }
         
+        let startTime = Date()
         return session
             .dataTaskPublisher(for: request)
             .subscribe(on: DispatchQueue.global(qos: .background))
@@ -46,7 +47,8 @@ final class Network: NetworkProtocol {
                 guard let response = response as? HTTPURLResponse else { throw APIError(type: .request) }
                 
                 /// Success
-                Console.log(service: service, request: request, data: data, code: response.statusCode)
+                let elapsed = Date().timeIntervalSince(startTime)
+                Console.log(service: service, request: request, data: data, code: response.statusCode, time: elapsed)
                 return try self.handle(response: response, with: data)
                 
             }
