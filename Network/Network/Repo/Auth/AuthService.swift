@@ -12,9 +12,9 @@ enum AuthService: ServiceProtocol {
     case getUsers(_ request: BreedModel)
     case createUser
     
-    var url: String {
-        return API.baseUrl
-    }
+    
+    var url: String { API.baseUrl }
+    
     
     var path: String {
         switch self {
@@ -25,6 +25,7 @@ enum AuthService: ServiceProtocol {
         }
     }
     
+    
     var method: HTTPMethod {
         switch self {
         case .getUsers:
@@ -34,31 +35,20 @@ enum AuthService: ServiceProtocol {
         }
     }
     
-    var headers: Headers? {
-        switch self {
-        case .getUsers, .createUser:
-            return nil
-        }
-    }
     
-    var parameters: Parameters? {
-        nil
-    }
+    var parameters: Parameters? { nil }
     
-    var body: Encodable? {
-        switch self {
-        case .getUsers:
-            return nil
-        case .createUser:
-            return nil
-        }
-    }
+    
+    var headers: Headers? { nil }
+    
+    
+    var body: Encodable? { nil }
+    
     
     var responseType: Decodable.Type {
         switch self {
         case .getUsers:
             return BaseResponse<[BreedModel]>.self
-            
         default:
             return EmptyResponse.self
         }

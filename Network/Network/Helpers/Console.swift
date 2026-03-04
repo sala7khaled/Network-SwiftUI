@@ -26,7 +26,7 @@ open class Console {
         log("🧩 Headers", "\n\(headers)")
         log("📦 Body", body == "" ? "{ }" : "\n\(body ?? "")")
         log("#️⃣ Status code", code)
-        log("📂 Response", "\n\(response)")
+        log("📂 Response", "\(service.responseType) \n\(response)")
         
         
         let endPoint = url.replacingOccurrences(of: API.baseUrl, with: "")
