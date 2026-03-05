@@ -202,7 +202,16 @@ fileprivate struct SentryDetailView: View {
         let queryItems = URLComponents(string: entry.url)?.queryItems
         
         return Section {
-            ChipListView(url: (API.baseUrl + entry.endPoint), parameters: queryItems ?? [])
+            
+            VStack(alignment: .leading, spacing: 10) {
+                Text(API.baseUrl + entry.endPoint)
+                    .font(.caption)
+                    .lineLimit(nil)
+                    .padding(.vertical, 2)
+                Divider()
+                ChipListView(parameters: queryItems ?? [])
+            }
+            
         } header: {
             HStack {
                 Text("url")
@@ -243,8 +252,12 @@ fileprivate struct SentryDetailView: View {
                         .font(.caption2)
                 }
             }
+                .invalidatableContent()
                 .applyIf(hasAuth) { view in
-                    view.copyable(title: String(localized: "token"), text: headers[APIHeader.authorization] ?? "", color: .orange)
+                    view.copyable(title: String(localized: "token"),
+                                  text: headers[APIHeader.authorization] ?? "",
+                                  color: .orange,
+                                  icon: "lock")
                 }
                 .copyable(text: headers.sorted { $0.key < $1.key }.map { "[\($0.key): \($0.value)]" }.joined(separator: "\n"))
         )
@@ -295,7 +308,7 @@ fileprivate struct SentryDetailView: View {
 }
 
 #Preview("Detail") {
-    SentryDetailView(entry: SentryEntry(url: "https://www.site.com/login?param=value",
+    SentryDetailView(entry: SentryEntry(url: "https://www.site.com/login?param1=value?param2=value",
                                         endPoint: "login",
                                         method: "GET",
                                         headers: ["Accept": "application/json",
@@ -310,64 +323,127 @@ fileprivate struct SentryDetailView: View {
                                         response: Data("sample response".utf8)))
 }
 
-// MARK: - Widget
+// MARK: - Chip List View
+fileprivate struct ChipItem: Identifiable {
+    let id = UUID()
+    let key: String
+    let value: String
+}
 fileprivate struct ChipListView: View {
-    private let url: String?
-    private let items: [(key: String, value: String)]
+    private let items: [ChipItem]
+    private let itemSpace: CGFloat = 8
     
-    // MARK: - Headers Init
     init(headers: [String: String]) {
-        self.url = nil
-        
         self.items = headers
             .sorted { $0.key < $1.key }
-            .map {
-                ($0.key,
-                 $0.key.contains(APIHeader.authorization)
-                    ? $0.value.truncateToken()
-                    : $0.value)
-            }
+            .map { ChipItem(
+                key: $0.key,
+                value: $0.key.contains(APIHeader.authorization)
+                ? $0.value.truncateToken()
+                : $0.value
+            )}
     }
     
-    // MARK: - Parameters Init
-    init(url: String, parameters: [URLQueryItem], sorted: Bool = true) {
-        let mapped = parameters.map { ("? \($0.name) =", $0.value ?? "__") }
-        let entries = sorted
-        ? mapped.sorted { $0.0 < $1.0 }
+    init(parameters: [URLQueryItem], sorted: Bool = true) {
+        let mapped = parameters.map { ChipItem(key: "? \($0.name) =", value: $0.value ?? "__") }
+        self.items = sorted
+        ? mapped.sorted { $0.key < $1.key }
         : mapped
-        
-        self.url = url
-        self.items = entries
     }
     
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        FlexibleView(items: items, itemSpace: itemSpace) { item in
             HStack(spacing: 6) {
-                if let url {
-                    Text(url)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .padding(.vertical, 6)
-                        .background(.clear)
-                }
-                ForEach(items, id: \.key) { item in
-                    HStack(spacing: 6) {
-                        Text(item.key)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                        Text(item.value)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                Text(item.key)
+                    .font(.system(size: 10))
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                Text(item.value)
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, itemSpace)
+            .padding(.vertical, 6)
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(6)
+        }
+    }
+}
+
+// MARK: - Flexible View
+fileprivate struct FlexibleView<Data: Collection, Content: View>: View where Data.Element: Identifiable {
+    
+    let items: Data
+    let itemSpace: CGFloat
+    let spacing: CGFloat
+    let content: (Data.Element) -> Content
+    
+    @State private var maxWidth: CGFloat = 0
+    
+    init(items: Data, itemSpace: CGFloat, spacing: CGFloat = 6,
+         @ViewBuilder content: @escaping (Data.Element) -> Content) {
+        self.items = items
+        self.itemSpace = itemSpace
+        self.spacing = spacing
+        self.content = content
+    }
+    
+    var body: some View {
+        generateContent(in: maxWidth)
+            .background(GeometryReader { geo in
+                Color.clear
+                    .onAppear { maxWidth = geo.size.width }
+                    .onChange(of: geo.size.width) { _, newWidth in
+                        maxWidth = newWidth
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(6)
+            })
+            .padding(.vertical, 2)
+    }
+    
+    private func generateContent(in totalWidth: CGFloat) -> some View {
+        var widthSoFar: CGFloat = 0
+        var rows: [[Data.Element]] = [[]]
+        var currentRow = 0
+        
+        for item in items {
+            let itemWidth = estimateWidth(for: item) + spacing
+            
+            if widthSoFar + itemWidth > totalWidth && totalWidth > 0 {
+                currentRow += 1
+                rows.append([])
+                widthSoFar = 0
+            }
+            
+            rows[currentRow].append(item)
+            widthSoFar += itemWidth
+        }
+        
+        return VStack(alignment: .leading, spacing: spacing) {
+            ForEach(rows.indices, id: \.self) { rowIndex in
+                HStack(spacing: spacing) {
+                    ForEach(rows[rowIndex]) { content($0) }
                 }
             }
-//            .padding(.vertical, 16)
-            .padding(.horizontal, 16)
         }
-        .listRowInsets(EdgeInsets())
+    }
+    
+    private func estimateWidth(for item: Data.Element) -> CGFloat {
+        let text: String
+        if let chip = item as? ChipItem {
+            text = chip.key + chip.value
+        } else {
+            text = "\(item.id)"
+        }
+        
+        let width = width(of: text, usingFont: .systemFont(ofSize: 10)) + (itemSpace * 2)
+        
+        print("\(text)  \(width)")
+        return width
+    }
+    
+    private func width(of text: String, usingFont font: UIFont) -> CGFloat {
+        let attributes = [NSAttributedString.Key.font: font]
+        return text.size(withAttributes: attributes).width
     }
 }

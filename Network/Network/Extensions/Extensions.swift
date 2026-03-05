@@ -134,8 +134,8 @@ extension Int {
 
 // MARK: - Copy
 extension View {
-    func copyable(title: String = String(localized: "copy"), text: String, color: Color = .blue) -> some View {
-        self.modifier(CopyableModifier(title: title, text: text, color: color))
+    func copyable(title: String = String(localized: "copy"), text: String, color: Color = .blue, icon: String = "square.on.square") -> some View {
+        self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon))
     }
     
     @ViewBuilder
@@ -152,6 +152,7 @@ fileprivate struct CopyableModifier: ViewModifier {
     let title: String
     let text: String
     let color: Color
+    let icon: String
     
     func body(content: Content) -> some View {
         content
@@ -159,7 +160,7 @@ fileprivate struct CopyableModifier: ViewModifier {
                 Button {
                     UIPasteboard.general.string = text
                 } label: {
-                    Label(title, systemImage: "square.on.square")
+                    Label(title, systemImage: icon)
                 }
                 .tint(color)
             }

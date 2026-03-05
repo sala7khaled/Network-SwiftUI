@@ -37,8 +37,8 @@ enum AuthService: ServiceProtocol {
     
     
     var parameters: Parameters? {
-        return ["ssss": "sadadad:ssss",
-                "dada": "fgaadadaqq"]
+        return ["ssss": "sadsss",
+                "dada": "fgaaqq"]
     }
     
     
