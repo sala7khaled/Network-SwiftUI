@@ -30,7 +30,8 @@ open class Console {
         log("📂 Response", "Expected: \(service.responseType) Time: \(time) \n\(response)")
         
         
-        let endPoint = url.replacingOccurrences(of: API.baseUrl, with: "")
+        let path = url.replacingOccurrences(of: API.baseUrl, with: "")
+        let endPoint = path.components(separatedBy: "?").first ?? path
         switch code {
         case 200...299:
             log("🏁 \(endPoint)", "✅ Success")
@@ -42,7 +43,7 @@ open class Console {
         print(separator)
         
         // MARK: - Sentry
-        let entry = SentryEntry(url: url, method: request?.httpMethod ?? "", headers: request?.allHTTPHeaderFields ?? [:], code: code, time: time, response: data ?? Data())
+        let entry = SentryEntry(url: url, endPoint: endPoint, method: request?.httpMethod ?? "", headers: request?.allHTTPHeaderFields ?? [:], code: code, time: time, response: data ?? Data())
         SentryManager.shared.add(entry)
     }
     

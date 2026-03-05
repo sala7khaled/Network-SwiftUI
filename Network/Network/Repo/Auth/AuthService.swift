@@ -36,7 +36,10 @@ enum AuthService: ServiceProtocol {
     }
     
     
-    var parameters: Parameters? { nil }
+    var parameters: Parameters? {
+        return ["ssss": "sadadad:ssss",
+                "dada": "fgaadadaqq"]
+    }
     
     
     var headers: Headers? { nil }

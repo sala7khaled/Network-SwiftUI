@@ -4,7 +4,36 @@
     "{ %lld bytes }" : {
 
     },
+    "%lld" : {
+
+    },
+    "%lld bytes" : {
+
+    },
+    "%lld header%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld Header%2$@"
+          }
+        }
+      }
+    },
     "%lld ms" : {
+
+    },
+    "%lld param%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld Param%2$@"
+          }
+        }
+      }
+    },
+    "🔐" : {
 
     },
     "clear" : {
@@ -105,12 +134,42 @@
         }
       }
     },
+    "headers" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Headers"
+          }
+        }
+      }
+    },
     "loading" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading..."
+          }
+        }
+      }
+    },
+    "request" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Request"
+          }
+        }
+      }
+    },
+    "response" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Response"
           }
         }
       }
@@ -131,6 +190,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sentry"
+          }
+        }
+      }
+    },
+    "url" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL"
           }
         }
       }

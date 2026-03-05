@@ -35,7 +35,6 @@ final class Network: NetworkProtocol {
         guard let request = URLRequest(service: service,
                                        cachePolicy: cachePolicy(service.method == .GET),
                                        timeoutInterval: requestTime) else {
-            
             return Fail<T, APIError>(error: APIError(type: .url)).eraseToAnyPublisher()
         }
         
@@ -56,7 +55,9 @@ final class Network: NetworkProtocol {
                 
                 /// Error
                 let apiError = (error as? APIError) ?? APIError(type: .unknown, message: error.localizedDescription)
-//                Console.log(service: service, request: request, data: nil, code: apiError.code, error: apiError)
+                if apiError.type == .unknown {
+                    Console.log(service: service, request: request, data: nil, code: apiError.code, error: apiError)
+                }
                 return apiError
             }
             .receive(on: DispatchQueue.main)

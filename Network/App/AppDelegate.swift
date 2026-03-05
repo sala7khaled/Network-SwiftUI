@@ -10,9 +10,7 @@ import SwiftUI
 @main
 struct AppDelegate: App {
     
-    #if DEBUG
-    @State private var showSentry = false
-    #endif
+    @State private var showSentry = true
     
     init() {
         Connectivity.start()
@@ -21,18 +19,15 @@ struct AppDelegate: App {
     var body: some Scene {
         WindowGroup {
             
-            #if DEBUG
             MainView()
-//                .contentShape(Rectangle())
                 .onLongPressGesture(minimumDuration: 0.2) {
+                    #if DEBUG
                     showSentry = true
+                    #endif
                 }
                 .fullScreenCover(isPresented: $showSentry) {
                     SentryView()
                 }
-            #else
-            MainView()
-            #endif
             
         }
     }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - Data Pretty Print
 extension Data? {
@@ -78,7 +79,23 @@ extension String {
         let remain = count - max
         return "\(visible)... + (\(remain) chars)"
     }
+    
+    func truncateToken(prefix: Int = 3, suffix: Int = 3) -> String {
+        guard let spaceIndex = firstIndex(of: " ") else { return self }
+        
+        let scheme = self[..<spaceIndex]          // e.g. "Bearer"
+        let tokenStart = index(after: spaceIndex) // start of token
+        let token = self[tokenStart...]
+        
+        guard token.count > prefix + suffix else { return self }
+        
+        let start = token.index(token.startIndex, offsetBy: prefix)
+        let end = token.index(token.endIndex, offsetBy: -suffix)
+        
+        return "\(scheme) \(token[..<start])...\(token[end...])"
+    }
 }
+
 
 
 // MARK: - Decoding Error
@@ -99,3 +116,18 @@ extension DecodingError {
         }
     }
 }
+
+
+// MARK: - Status Code Color
+extension Int {
+    func color() -> Color {
+        switch self {
+        case 100..<200: return .blue
+        case 200..<300: return .green
+        case 300..<400: return .yellow
+        case 400..<500: return .orange
+        default: return .red
+        }
+    }
+}
+
