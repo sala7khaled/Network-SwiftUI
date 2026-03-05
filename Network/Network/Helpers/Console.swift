@@ -43,7 +43,7 @@ open class Console {
         print(separator)
         
         // MARK: - Sentry
-        let entry = SentryEntry(url: url, endPoint: endPoint, method: request?.httpMethod ?? "", headers: request?.allHTTPHeaderFields ?? [:], code: code, time: time, response: data ?? Data())
+        let entry = SentryEntry(url: url, endPoint: endPoint, method: request?.httpMethod ?? "", headers: request?.allHTTPHeaderFields ?? [:], code: code, time: time, body: request?.httpBody, response: data ?? Data())
         SentryManager.shared.add(entry)
     }
     

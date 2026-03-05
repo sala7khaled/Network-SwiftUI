@@ -36,6 +36,16 @@
     "🔐" : {
 
     },
+    "body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Body"
+          }
+        }
+      }
+    },
     "clear" : {
       "localizations" : {
         "en" : {

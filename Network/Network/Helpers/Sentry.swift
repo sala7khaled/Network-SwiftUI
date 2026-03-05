@@ -17,6 +17,7 @@ struct SentryEntry: Identifiable {
     let headers: Headers
     let code: Int
     let time: TimeInterval
+    var body: Data?
     var response: Data?
 }
 
@@ -153,6 +154,7 @@ fileprivate struct SentryDetailView: View {
                 requestSection
                 urlSection
                 headersSection
+                bodySection
                 responseSection
             }
             .listStyle(.insetGrouped)
@@ -247,6 +249,30 @@ fileprivate struct SentryDetailView: View {
             }
         )
     }
+    
+    // MARK: - Body
+    var bodySection: some View {
+        
+        guard let body = entry.body else { return AnyView(EmptyView()) }
+        
+        return AnyView(
+            Section {
+                Text(entry.body.prettyPrint().truncated(500))
+                    .font(.caption)
+                    .lineLimit(nil)
+            } header: {
+                HStack {
+                    Text("body")
+                        .font(.caption)
+                        .bold()
+                    Spacer()
+                    Text("\(body.count) bytes")
+                        .font(.caption2)
+                }
+            }
+        )
+    }
+    
     
     // MARK: - Response
     var responseSection: some View {

@@ -29,7 +29,7 @@ enum AuthService: ServiceProtocol {
     var method: HTTPMethod {
         switch self {
         case .getUsers:
-            return .GET
+            return .POST
         case .createUser:
             return .GET
         }
@@ -45,7 +45,14 @@ enum AuthService: ServiceProtocol {
     var headers: Headers? { nil }
     
     
-    var body: Encodable? { nil }
+    var body: Encodable? {
+        switch self {
+        case .getUsers(let request):
+            return request
+        case .createUser:
+            return nil
+        }
+    }
     
     
     var responseType: Decodable.Type {
