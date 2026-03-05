@@ -56,6 +56,16 @@
         }
       }
     },
+    "copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        }
+      }
+    },
     "error.backend" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -200,6 +210,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sentry"
+          }
+        }
+      }
+    },
+    "token" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token"
           }
         }
       }

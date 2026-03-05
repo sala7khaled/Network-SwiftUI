@@ -56,8 +56,6 @@ struct SentryView: View {
                     
                     HStack(alignment: .center) {
                         HStack {
-//                            TagItem(value: entry.method)
-                            
                             Text(entry.method)
                                 .font(.caption)
                                 .fontWeight(.medium)
@@ -131,8 +129,6 @@ struct SentryView: View {
                                 code: 200,
                                 time: 10,
                                 response: Data("Sample response".utf8)))
-        
-        
         return manager
     }
 }
@@ -198,6 +194,7 @@ fileprivate struct SentryDetailView: View {
                     .font(.caption2)
             }
         }
+        .copyable(text: "[\(entry.method)] \(entry.endPoint): \(entry.code)")
     }
     
     // MARK: - URL
@@ -218,6 +215,7 @@ fileprivate struct SentryDetailView: View {
                 }
             }
         }
+        .copyable(text: entry.url)
     }
     
     // MARK: - Headers
@@ -226,9 +224,7 @@ fileprivate struct SentryDetailView: View {
         let headers = entry.headers
         guard !headers.isEmpty else { return AnyView(EmptyView()) }
         
-        let hasAuth = headers.keys.contains {
-            $0.localizedCaseInsensitiveContains(APIHeader.authorization)
-        }
+        let hasAuth = headers.keys.contains { $0.contains(APIHeader.authorization) }
         
         return AnyView(
             Section {
@@ -247,6 +243,10 @@ fileprivate struct SentryDetailView: View {
                         .font(.caption2)
                 }
             }
+                .applyIf(hasAuth) { view in
+                    view.copyable(title: String(localized: "token"), text: headers[APIHeader.authorization] ?? "", color: .orange)
+                }
+                .copyable(text: headers.sorted { $0.key < $1.key }.map { "[\($0.key): \($0.value)]" }.joined(separator: "\n"))
         )
     }
     
@@ -269,7 +269,7 @@ fileprivate struct SentryDetailView: View {
                     Text("\(body.count) bytes")
                         .font(.caption2)
                 }
-            }
+            }.copyable(text: entry.body.prettyPrint().truncated(500))
         )
     }
     
@@ -290,6 +290,7 @@ fileprivate struct SentryDetailView: View {
                     .font(.caption2)
             }
         }
+        .copyable(text: entry.response.prettyPrint().truncated(4000))
     }
 }
 
@@ -350,7 +351,7 @@ fileprivate struct ChipListView: View {
                         .background(.clear)
                 }
                 ForEach(items, id: \.key) { item in
-                    HStack(spacing: 4) {
+                    HStack(spacing: 6) {
                         Text(item.key)
                             .font(.caption)
                             .fontWeight(.medium)
@@ -358,14 +359,14 @@ fileprivate struct ChipListView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(6)
                 }
             }
-            .padding(.vertical, 22)
-            .padding(.horizontal, 20)
+//            .padding(.vertical, 16)
+            .padding(.horizontal, 16)
         }
         .listRowInsets(EdgeInsets())
     }

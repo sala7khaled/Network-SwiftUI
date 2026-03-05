@@ -131,3 +131,42 @@ extension Int {
     }
 }
 
+
+// MARK: - Copy
+extension View {
+    func copyable(title: String = String(localized: "copy"), text: String, color: Color = .blue) -> some View {
+        self.modifier(CopyableModifier(title: title, text: text, color: color))
+    }
+    
+    @ViewBuilder
+    func applyIf<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+}
+
+fileprivate struct CopyableModifier: ViewModifier {
+    let title: String
+    let text: String
+    let color: Color
+    
+    func body(content: Content) -> some View {
+        content
+            .swipeActions(edge: .trailing) {
+                Button {
+                    UIPasteboard.general.string = text
+                } label: {
+                    Label(title, systemImage: "square.on.square")
+                }
+                .tint(color)
+            }
+            .contextMenu {
+                Button(title) {
+                    UIPasteboard.general.string = text
+                }
+            }
+    }
+}
