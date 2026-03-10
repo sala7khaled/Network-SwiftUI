@@ -19,6 +19,7 @@ struct SentryEntry: Identifiable {
     let time: TimeInterval
     var body: Data?
     var response: Data?
+    var error: APIError?
 }
 
 // MARK: - Manager
@@ -61,7 +62,7 @@ struct SentryView: View {
                                 .fontWeight(.medium)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.gray.opacity(0.2))
+                                .background(.gray.opacity(0.2))
                                 .cornerRadius(6)
                             
                             Text(entry.endPoint)
@@ -168,22 +169,54 @@ fileprivate struct SentryDetailView: View {
     
     // MARK: - Request
     var requestSection: some View {
-        Section {
-            HStack {
-                Text(entry.method)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(6)
-                Spacer()
-                Text("\(entry.code)")
-                    .font(.subheadline)
-                    .bold()
-                    .foregroundColor(entry.code.color())
+        
+        var copyText = "[\(entry.method)] \(entry.endPoint) (code: \(entry.code))"
+        if let error = entry.error {
+            copyText += "\n[\(error.type.rawValue.capitalized)] \(error.localize())"
+        }
+        
+        return Section {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    HStack {
+                        Text(entry.method)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.gray.opacity(0.2))
+                            .cornerRadius(6)
+                        Text(entry.endPoint)
+                            .font(.caption)
+                            .lineLimit(nil)
+                            .padding(.vertical, 4)
+                    }
+                    Spacer()
+                    Text("\(entry.code)")
+                        .font(.subheadline)
+                        .bold()
+                        .foregroundColor(entry.code.color())
+                }
+                .padding(.vertical, 4)
+                
+                if let error = entry.error {
+                    Divider()
+                    HStack {
+                        Text(error.type.rawValue.capitalized)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.red.opacity(0.2))
+                            .foregroundStyle(.red)
+                            .cornerRadius(6)
+                        Text(error.localize())
+                            .font(.caption)
+                            .lineLimit(nil)
+                            .padding(.vertical, 4)
+                    }
+                }
             }
-            .padding(.vertical, 4)
         } header: {
             HStack {
                 Text("request")
@@ -194,7 +227,7 @@ fileprivate struct SentryDetailView: View {
                     .font(.caption2)
             }
         }
-        .copyable(text: "[\(entry.method)] \(entry.endPoint): \(entry.code)")
+        .copyable(text: copyText)
     }
     
     // MARK: - URL
@@ -207,7 +240,7 @@ fileprivate struct SentryDetailView: View {
                 Text(API.baseUrl + entry.endPoint)
                     .font(.caption)
                     .lineLimit(nil)
-                    .padding(.vertical, 2)
+                    .padding(.vertical, 3)
                 Divider()
                 ChipListView(parameters: queryItems ?? [])
             }
@@ -365,7 +398,7 @@ fileprivate struct ChipListView: View {
             }
             .padding(.horizontal, itemSpace)
             .padding(.vertical, 6)
-            .background(Color.gray.opacity(0.2))
+            .background(.gray.opacity(0.2))
             .cornerRadius(6)
         }
     }
@@ -429,21 +462,8 @@ fileprivate struct FlexibleView<Data: Collection, Content: View>: View where Dat
     }
     
     private func estimateWidth(for item: Data.Element) -> CGFloat {
-        let text: String
-        if let chip = item as? ChipItem {
-            text = chip.key + chip.value
-        } else {
-            text = "\(item.id)"
-        }
-        
-        let width = width(of: text, usingFont: .systemFont(ofSize: 10)) + (itemSpace * 2)
-        
-        print("\(text)  \(width)")
-        return width
-    }
-    
-    private func width(of text: String, usingFont font: UIFont) -> CGFloat {
-        let attributes = [NSAttributedString.Key.font: font]
-        return text.size(withAttributes: attributes).width
+        let text = (item as? ChipItem).map { $0.key + $0.value } ?? "\(item.id)"
+        let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)] // Same font as ChipItem
+        return text.size(withAttributes: attributes).width + (itemSpace * 2)
     }
 }

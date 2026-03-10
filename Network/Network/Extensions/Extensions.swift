@@ -8,6 +8,32 @@
 import Foundation
 import SwiftUI
 
+// MARK: - String
+extension String {
+    func truncated(_ max: Int) -> String {
+        guard count > max else { return self }
+        
+        let visible = prefix(max)
+        let remain = count - max
+        return "\(visible)... + (\(remain) chars)"
+    }
+    
+    func truncateToken(prefix: Int = 3, suffix: Int = 3) -> String {
+        guard let spaceIndex = firstIndex(of: " ") else { return self }
+        
+        let scheme = self[..<spaceIndex]
+        let tokenStart = index(after: spaceIndex)
+        let token = self[tokenStart...]
+        
+        guard token.count > prefix + suffix else { return self }
+        
+        let start = token.index(token.startIndex, offsetBy: prefix)
+        let end = token.index(token.endIndex, offsetBy: -suffix)
+        
+        return "\(scheme) \(token[..<start])...\(token[end...])"
+    }
+}
+
 // MARK: - Data Pretty Print
 extension Data? {
     
@@ -70,34 +96,6 @@ extension Headers {
 }
 
 
-// MARK: - String
-extension String {
-    func truncated(_ max: Int) -> String {
-        guard count > max else { return self }
-        
-        let visible = prefix(max)
-        let remain = count - max
-        return "\(visible)... + (\(remain) chars)"
-    }
-    
-    func truncateToken(prefix: Int = 3, suffix: Int = 3) -> String {
-        guard let spaceIndex = firstIndex(of: " ") else { return self }
-        
-        let scheme = self[..<spaceIndex]          // e.g. "Bearer"
-        let tokenStart = index(after: spaceIndex) // start of token
-        let token = self[tokenStart...]
-        
-        guard token.count > prefix + suffix else { return self }
-        
-        let start = token.index(token.startIndex, offsetBy: prefix)
-        let end = token.index(token.endIndex, offsetBy: -suffix)
-        
-        return "\(scheme) \(token[..<start])...\(token[end...])"
-    }
-}
-
-
-
 // MARK: - Decoding Error
 extension DecodingError {
     
@@ -132,11 +130,8 @@ extension Int {
 }
 
 
-// MARK: - Copy
+// MARK: - View
 extension View {
-    func copyable(title: String = String(localized: "copy"), text: String, color: Color = .blue, icon: String = "square.on.square") -> some View {
-        self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon))
-    }
     
     @ViewBuilder
     func applyIf<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
@@ -146,8 +141,14 @@ extension View {
             self
         }
     }
+    
+    func copyable(title: String = String(localized: "copy"), text: String, color: Color = .blue, icon: String = "square.on.square") -> some View {
+        self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon))
+    }
+
 }
 
+// MARK: - Copy
 fileprivate struct CopyableModifier: ViewModifier {
     let title: String
     let text: String

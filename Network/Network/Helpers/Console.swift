@@ -21,13 +21,14 @@ open class Console {
         let headers = (request?.allHTTPHeaderFields ?? [:]).prettyPrint()
         let body = request?.httpBody.prettyPrint().truncated(500)
         let response = data.prettyPrint().truncated(3000)
+        let ms = Int(time * 1000).formatted(.number.grouping(.automatic))
         
         print("\n" + separator)
         log("🌐 \(request?.httpMethod ?? "")", url)
         log("🧩 Headers", "\n\(headers)")
         log("📦 Body", body == "" ? "{ }" : "\n\(body ?? "")")
         log("#️⃣ Status code", code)
-        log("📂 Response", "Expected: \(service.responseType) Time: \(time) \n\(response)")
+        log("📂 Response", "\(service.responseType) (\(ms) ms) \n\(response)")
         
         
         let path = url.replacingOccurrences(of: API.baseUrl, with: "")
@@ -37,13 +38,23 @@ open class Console {
             log("🏁 \(endPoint)", "✅ Success")
             break
         default:
-            log("❌ Error", "\(error?.type ?? .unknown)".capitalized + " (code: \(code)) \n   \(error?.message ?? "message: nil")")
+            if let error {
+                log("❌ Error", (error.type).rawValue.capitalized + " (code: \(error.code)) \n   \(error.localize())")
+            }
             break
         }
         print(separator)
         
         // MARK: - Sentry
-        let entry = SentryEntry(url: url, endPoint: endPoint, method: request?.httpMethod ?? "", headers: request?.allHTTPHeaderFields ?? [:], code: code, time: time, body: request?.httpBody, response: data ?? Data())
+        let entry = SentryEntry(url: url,
+                                endPoint: endPoint,
+                                method: request?.httpMethod ?? "",
+                                headers: request?.allHTTPHeaderFields ?? [:],
+                                code: code,
+                                time: time,
+                                body: request?.httpBody,
+                                response: data ?? Data(),
+                                error: error)
         SentryManager.shared.add(entry)
     }
     
