@@ -51,12 +51,12 @@ struct MainView: View {
                         Text(title)
                             .font(.headline)
                     }
-                    if let description = breed.attributes.description {
-                        Text(description)
+//                    if let description = breed.attributes.descriptionss {
+                        Text(breed.attributes.descriptionss)
                             .font(.subheadline)
                             .foregroundColor(.gray)
                             .lineLimit(3)
-                    }
+//                    }
                 }
             }
             .refreshable {

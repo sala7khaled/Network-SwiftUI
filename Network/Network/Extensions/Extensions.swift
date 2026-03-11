@@ -34,6 +34,19 @@ extension String {
     }
 }
 
+
+// MARK: - Paramters
+extension Encodable {
+    
+    func asDictionary() -> [String: Any]? {
+        guard let data = try? JSONEncoder().encode(self),
+              let params = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
+        else { return nil }
+        return params
+    }
+}
+
+
 // MARK: - Data Pretty Print
 extension Data? {
     
@@ -106,8 +119,8 @@ extension DecodingError {
              .keyNotFound(_, let context),
              .dataCorrupted(let context):
             
-            let path = context.codingPath.map { $0.stringValue }.joined(separator: " ➡️ ")
-            return "Decoding error at key: \(path) \n   \(context.debugDescription)"
+            let path = context.codingPath.map { $0.stringValue.capitalized }.joined(separator: ")  →  (")
+            return "Decoding error at key  (\(path))\n\(context.debugDescription)"
             
         @unknown default:
             return self.localizedDescription
@@ -120,11 +133,11 @@ extension DecodingError {
 extension Int {
     func color() -> Color {
         switch self {
-        case 100..<200: return .blue
-        case 200..<300: return .green
-        case 300..<400: return .yellow
-        case 400..<500: return .orange
-        default: return .red
+        case 100 ..< 200: return .blue
+        case 200 ..< 300: return .green
+        case 300 ..< 400: return .yellow
+        case 400 ..< 500: return .orange
+        default: return .gray
         }
     }
 }

@@ -19,13 +19,13 @@ struct BreedModel: Codable, Identifiable {
 // MARK: - Attributes
 struct AttributesModel: Codable {
     let name: String?
-    let description: String?
+    let descriptionss: String
     let life, maleWeight, femaleWeight: MinMaxModel?
     let hypoallergenic: Bool?
 
     enum CodingKeys: String, CodingKey {
         case name
-        case description
+        case descriptionss
         case life
         case maleWeight = "male_weight"
         case femaleWeight = "female_weight"

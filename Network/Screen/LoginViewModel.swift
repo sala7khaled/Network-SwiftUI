@@ -31,7 +31,9 @@ class LoginViewModel: ObservableObject {
 //        network.call(service: AuthService.getUsers,
 //                     type: BaseResponse<[BreedModel]>.self)
         
-        authRepo.getUsers(breed: BreedModel(id: "1", type: "222", attributes: AttributesModel(name: "1313", description: "!313", life: nil, maleWeight: nil, femaleWeight: nil, hypoallergenic: true)))
+        let request = BreedModel(id: "1", type: "222", attributes: AttributesModel(name: "1313", descriptionss: "!313", life: nil, maleWeight: nil, femaleWeight: nil, hypoallergenic: true))
+        
+        authRepo.getUsers(breed: request)
         .sink { completion in
             self.isLoading = false
             switch completion {

@@ -33,17 +33,20 @@ open class Console {
         
         let path = url.replacingOccurrences(of: API.baseUrl, with: "")
         let endPoint = path.components(separatedBy: "?").first ?? path
+
         switch code {
         case 200...299:
-            log("🏁 \(endPoint)", "✅ Success")
+            log("🏁 \(endPoint)", "✅ API Success")
             break
         default:
-            if let error {
-                log("❌ Error", (error.type).rawValue.capitalized + " (code: \(error.code)) \n   \(error.localize())")
-            }
-            break
+            log("🚩 \(endPoint)", "❌ API Failed")
         }
         print(separator)
+        
+        if let error {
+            log("🚩 \((error.type).rawValue.capitalized) Error", "(code: \(error.code))\n\(error.localize())")
+            print(separator)
+        }
         
         // MARK: - Sentry
         let entry = SentryEntry(url: url,

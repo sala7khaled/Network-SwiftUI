@@ -37,8 +37,13 @@ enum AuthService: ServiceProtocol {
     
     
     var parameters: Parameters? {
-        return ["ssss": "sadsss",
-                "dada": "fgaaqq"]
+        switch self {
+        case .getUsers(let request):
+             ["sss": ""]
+//            request.asDictionary()
+        case .createUser:
+            nil
+        }
     }
     
     

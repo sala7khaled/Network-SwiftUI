@@ -81,6 +81,12 @@ struct SentryView: View {
                         .lineLimit(2)
                     
                     HStack {
+                        if let error = entry.error {
+                            Text(error.type.rawValue.capitalized)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.red)
+                        }
                         Text("\(Int(entry.time * 1000)) ms")
                         Spacer()
                         Text("{ \(entry.response?.count ?? 0) bytes }")
@@ -170,10 +176,8 @@ fileprivate struct SentryDetailView: View {
     // MARK: - Request
     var requestSection: some View {
         
-        var copyText = "[\(entry.method)] \(entry.endPoint) (code: \(entry.code))"
-        if let error = entry.error {
-            copyText += "\n[\(error.type.rawValue.capitalized)] \(error.localize())"
-        }
+        let copyText = "[\(entry.method)] \(entry.endPoint) (code: \(entry.code))"
+        let hasError = entry.error != nil
         
         return Section {
             VStack(alignment: .leading, spacing: 10) {
@@ -201,7 +205,7 @@ fileprivate struct SentryDetailView: View {
                 
                 if let error = entry.error {
                     Divider()
-                    HStack {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(error.type.rawValue.capitalized)
                             .font(.caption)
                             .fontWeight(.medium)
@@ -215,6 +219,7 @@ fileprivate struct SentryDetailView: View {
                             .lineLimit(nil)
                             .padding(.vertical, 4)
                     }
+                    .padding(.vertical, 4)
                 }
             }
         } header: {
@@ -226,6 +231,12 @@ fileprivate struct SentryDetailView: View {
                 Text("\(Int(entry.time * 1000)) ms")
                     .font(.caption2)
             }
+        }
+        .applyIf(hasError) { view in
+            view.copyable(title: String(localized: "error"),
+                          text: "[\(entry.error!.type.rawValue.capitalized)] \(entry.error!.localize())",
+                          color: .red,
+                          icon: "flag.fill")
         }
         .copyable(text: copyText)
     }
@@ -285,7 +296,6 @@ fileprivate struct SentryDetailView: View {
                         .font(.caption2)
                 }
             }
-                .invalidatableContent()
                 .applyIf(hasAuth) { view in
                     view.copyable(title: String(localized: "token"),
                                   text: headers[APIHeader.authorization] ?? "",
@@ -341,19 +351,21 @@ fileprivate struct SentryDetailView: View {
 }
 
 #Preview("Detail") {
-    SentryDetailView(entry: SentryEntry(url: "https://www.site.com/login?param1=value?param2=value",
+    SentryDetailView(entry: SentryEntry(url: "https://dogapi.dog/api/v2/breeds?id=&attributes=ssadddadadad8ass&type=",
                                         endPoint: "login",
                                         method: "GET",
                                         headers: ["Accept": "application/json",
                                                   "Accept-Language": "en",
-                                                  "Build": "application/json",
+                                                  "Build": "application/js",
                                                   "Content-Type": "1",
+                                                  "Authorization": "Bearer abcdefghijklmn",
                                                   "Device-Id": "8B6055A7-EE9F-4017-B8DE-ED0D14B01CA5",
                                                   "Platform": "iOS",
-                                                  "Version": "1.0"],
+                                                  "Version": ""],
                                         code: 200,
                                         time: 10,
-                                        response: Data("sample response".utf8)))
+                                        response: Data("sample response".utf8),
+                                        error: APIError(type: .server)))
 }
 
 // MARK: - Chip List View
@@ -372,13 +384,13 @@ fileprivate struct ChipListView: View {
             .map { ChipItem(
                 key: $0.key,
                 value: $0.key.contains(APIHeader.authorization)
-                ? $0.value.truncateToken()
-                : $0.value
+                ? ($0.value == "" ? "__" : $0.value.truncateToken())
+                : ($0.value == "" ? "__" : $0.value)
             )}
     }
     
     init(parameters: [URLQueryItem], sorted: Bool = true) {
-        let mapped = parameters.map { ChipItem(key: "? \($0.name) =", value: $0.value ?? "__") }
+        let mapped = parameters.map { ChipItem(key: "? \($0.name)  =", value: ($0.value == "" ? "__" : $0.value) ?? "__") }
         self.items = sorted
         ? mapped.sorted { $0.key < $1.key }
         : mapped
@@ -393,7 +405,7 @@ fileprivate struct ChipListView: View {
                     .lineLimit(1)
                 Text(item.value)
                     .font(.system(size: 10))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(item.value == "__" ? .red : .secondary)
                     .lineLimit(1)
             }
             .padding(.horizontal, itemSpace)
@@ -440,7 +452,7 @@ fileprivate struct FlexibleView<Data: Collection, Content: View>: View where Dat
         var currentRow = 0
         
         for item in items {
-            let itemWidth = estimateWidth(for: item) + spacing
+            let itemWidth = estimateWidth(for: item)
             
             if widthSoFar + itemWidth > totalWidth && totalWidth > 0 {
                 currentRow += 1
@@ -463,7 +475,7 @@ fileprivate struct FlexibleView<Data: Collection, Content: View>: View where Dat
     
     private func estimateWidth(for item: Data.Element) -> CGFloat {
         let text = (item as? ChipItem).map { $0.key + $0.value } ?? "\(item.id)"
-        let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)] // Same font as ChipItem
-        return text.size(withAttributes: attributes).width + (itemSpace * 2)
+        let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10, weight: .medium)] // Same font as ChipItem
+        return text.size(withAttributes: attributes).width + (itemSpace * 2) + itemSpace
     }
 }
