@@ -16,7 +16,7 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             productView
-                .navigationTitle(String(localized: "users"))
+                .navigationTitle(String(localized: "products"))
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Text("\(viewModel.products.count) / \(viewModel.totalProducts)")
@@ -57,16 +57,46 @@ struct HomeView: View {
         else {
             VStack {
                 List(viewModel.products) { product in
-                    VStack(alignment: .leading) {
+                    HStack(alignment: .center, spacing: 16) {
                         
-                        Text(product.title ?? "")
-                            .font(.headline)
+                        ImageView(product.thumbnail)
+                            .frame(width: 80, height: 80)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 8)
+                            .background(.thinMaterial)
+                            .cornerRadius(10)
                         
-                        if let description = product.description {
-                            Text(description)
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                                .lineLimit(3)
+                        VStack(alignment: .leading) {
+                            
+                            Text(product.title?.capitalized ?? "")
+                                .font(.headline)
+                            
+                            if let description = product.description {
+                                Text(description)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .lineLimit(1)
+                            }
+                            
+                            HStack {
+                                Text(product.category?.capitalized ?? "")
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 4)
+                                    .font(.footnote)
+                                    .foregroundColor(.gray)
+                                    .lineLimit(1)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(.gray.opacity(0.5), lineWidth: 0.5)
+                                    )
+                                Spacer()
+                                Text(String(product.price ?? 0))
+                                    .font(.subheadline)
+                                    .bold()
+                                    .foregroundColor(.green)
+                                    .lineLimit(1)
+                                
+                            }
                         }
                     }
                     .onAppear {
@@ -75,6 +105,7 @@ struct HomeView: View {
                         }
                     }
                 }
+                .scrollIndicators(.automatic)
                 .refreshable { viewModel.fetchProducts() }
             }
         }

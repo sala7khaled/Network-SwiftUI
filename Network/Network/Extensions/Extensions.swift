@@ -50,7 +50,7 @@ extension Encodable {
 // MARK: - Data Pretty Print
 extension Data? {
     
-    func prettyPrint(max: Int = 80) -> String {
+    func prettyPrint(max: Int = 120) -> String {
         guard let data = self else { return "{ }" }
         
         do {

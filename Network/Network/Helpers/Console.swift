@@ -8,7 +8,7 @@
 import Foundation
 
 open class Console {
-    static private var separator = String(repeating: "—", count: 124)
+    static private var separator = String(repeating: "—", count: 160)
     
     static func log(service: ServiceProtocol,
                     request: URLRequest?,

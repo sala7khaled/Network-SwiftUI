@@ -20,6 +20,7 @@ struct ProductModel: Codable, Identifiable {
     let title: String?
     let description: String?
     let category: String?
+    let categorys: String?
     let price: Double?
     let thumbnail: String?
 }

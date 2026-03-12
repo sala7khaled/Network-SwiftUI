@@ -48,7 +48,6 @@ extension URLRequest {
             addValue("\(Key.bearer) \(token)", forHTTPHeaderField: APIHeader.authorization)
         }
         
-        
         let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wva2hpZG1hdGRhcmFrLmNvbVwvYXBpXC9sb2dpbiIsImlhdCI6MTc3MjYzNTYyMiwibmJmIjoxNzcyNjM1NjIyLCJqdGkiOiJQSnhWY2h5YnU3WHFEZzU3Iiwic3ViIjoxLCJwcnYiOiJkZmVjYjMxZjkxMWZmMjU0Mjc1OTFiNmY0N2FkMzhhOTUxNjljNGVjIn0.devYDLtsd-X8-8iyzV4b1_Cy0z-BkAlssBn1I87VMNs"
         addValue("\(Key.bearer) \(token)", forHTTPHeaderField: APIHeader.authorization)
         
