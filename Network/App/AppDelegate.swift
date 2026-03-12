@@ -19,7 +19,7 @@ struct AppDelegate: App {
     var body: some Scene {
         WindowGroup {
             
-            MainView()
+            HomeView()
                 .onLongPressGesture(minimumDuration: 0.2) {
                     #if DEBUG
                     showSentry = true

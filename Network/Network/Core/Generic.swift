@@ -13,21 +13,17 @@ struct EmptyResponse: Decodable { }
 
 // MARK: - Base Response
 struct BaseResponse<T: Decodable>: Decodable {
-    let success: Bool?
-    let message: String?
-    let data: T?
+    let total: Int?
+    let skip: Int?
+    let limit: Int?
+    let products: T?
 }
 
 
-// MARK: - Fail
+// MARK: - Fail Response
 struct FailResponse: Decodable {
-    let message: String?
     let code: Int?
-    
-    enum CodingKeys: String, CodingKey {
-        case message = "error"
-        case code = "status"
-    }
+    let message: String?
 }
 
 

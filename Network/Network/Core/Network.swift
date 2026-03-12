@@ -38,29 +38,6 @@ final class Network: NetworkProtocol {
             return Fail<T, APIError>(error: APIError(type: .url)).eraseToAnyPublisher()
         }
         
-//        let startTime = Date()
-//        return session
-//            .dataTaskPublisher(for: request)
-//            .subscribe(on: DispatchQueue.global(qos: .background))
-//            .tryMap { data, response -> T in
-//                guard let response = response as? HTTPURLResponse else { throw APIError(type: .request) }
-//                
-//                let elapsed = Date().timeIntervalSince(startTime)
-//                let result: T = try self.handle(response: response, with: data)
-//                let error: APIError? = result as? APIError
-//                Console.log(service: service, request: request, data: data, code: response.statusCode, time: elapsed, error: error)
-//                return try self.handle(response: response, with: data)
-//                
-//            }
-//            .mapError { error -> APIError in
-//
-//                let apiError = (error as? APIError) ?? APIError(type: .unknown, message: error.localizedDescription)
-//                Console.log(service: service, request: request, data: nil, code: apiError.code, error: apiError)
-//                return apiError
-//            }
-//            .receive(on: DispatchQueue.main)
-//            .eraseToAnyPublisher()
-        
         let startTime = Date()
         var responseData: Data?
         

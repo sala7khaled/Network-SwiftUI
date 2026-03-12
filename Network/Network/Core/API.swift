@@ -25,20 +25,21 @@ final class Api {
     
     let config: APIConfiguration
     
-    var baseUrl: String {
-        switch config {
-        case .development:
-            return "https://dogapi.dog/api/v2/"
-        case .production:
-            return "https://dogapi.dog/api/v2/"
-        }
-    }
-    
     init(config: APIConfiguration) {
         self.config = config
     }
+    
+    // MARK: - Base Url
+    var baseUrl: String {
+        switch config {
+        case .development:
+            return "https://dummyjson.com/"
+        case .production:
+            return "https://dummyjson.com/"
+        }
+    }
      
-    // MARK: - AUTH
-    let AUTH_BREEDS = "breeds"
-    /// add more api endpoints
+    // MARK: - Home
+    let products = "products"
+    let addProducts = "products/add"
 }
