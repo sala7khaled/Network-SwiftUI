@@ -5,7 +5,7 @@
 //  Created by Salah Khaled on 28/02/2026.
 //
 
-import Foundation
+import UIKit
 import SystemConfiguration
 import Combine
 
@@ -20,9 +20,11 @@ protocol NetworkProtocol {
 final class Network: NetworkProtocol {
     
     // MARK: - Properties
+    static let shared = Network()
     private let session: URLSession
     private let requestTime: TimeInterval = 30
     private let decoder = JSONDecoder()
+    @Published var imageCache = [URL: UIImage]()
     
     // MARK: - Init
     init(session: URLSession = .shared) {

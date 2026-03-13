@@ -9,39 +9,22 @@ import SwiftUI
 import Combine
 
 // MARK: - Network Image
-final class NetworkImage: ObservableObject {
-    
-    // MARK: - Properties
-    static let shared = NetworkImage()
-    private var runningRequests = [UUID: AnyCancellable]()
-    @Published private(set) var cache = [URL: UIImage]()
-    
-    // MARK: - Methods
-    func loadImage(_ url: URL) -> AnyPublisher<UIImage?, Never> {
+extension Network {
+    func image(_ urlString: String) async -> UIImage? {
         
-        if let image = cache[url] {
-            return Just(image).eraseToAnyPublisher()
+        guard let url = URL(string: urlString) else { return nil }
+        guard imageCache[url] == nil else { return imageCache[url] }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let image = UIImage(data: data) {
+                imageCache[url] = image
+                return image
+            }
+        } catch {
+            return nil
         }
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .map { UIImage(data: $0.data) }
-            .catch { _ in Just(nil) }
-            .handleEvents(receiveOutput: { [weak self] image in
-                if let image = image {
-                    self?.cache[url] = image
-                }
-            })
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func cancel(_ uuid: UUID) {
-        runningRequests[uuid]?.cancel()
-        runningRequests.removeValue(forKey: uuid)
-    }
-    
-    func track(_ uuid: UUID, cancellable: AnyCancellable) {
-        runningRequests[uuid] = cancellable
+        return nil
     }
 }
 
@@ -49,9 +32,8 @@ final class NetworkImage: ObservableObject {
 struct ImageView: View {
     
     // MARK: - State
-    @State private var image: UIImage? = nil
-    @State private var requestId: UUID? = nil
-    @State private var isLoading: Bool = true
+    @State private var image: UIImage?
+    @State private var isLoading = true
     
     // MARK: - Properties
     let urlString: String?
@@ -77,49 +59,31 @@ struct ImageView: View {
                     .resizable()
                     .scaledToFit()
             } else if isLoading {
-              loadingView
+                loadingView
             } else {
                 holderView
                     .symbolRenderingMode(.multicolor)
                     .opacity(0.5)
             }
         }
-        .onAppear { load() }
-        .onDisappear { cancel() }
+        .task(id: urlString) {
+            await load()
+        }
     }
     
-    // MARK: - Methods
-    private func load() {
-
-        if let uuid = requestId {
-            NetworkImage.shared.cancel(uuid)
-        }
-        
+    // MARK: - Load
+    @MainActor
+    private func load() async {
         image = nil
         isLoading = true
         
-        guard let urlString = urlString, let url = URL(string: urlString) else {
+        guard let urlString else {
             isLoading = false
             return
         }
         
-        let uuid = UUID()
-        requestId = uuid
-        
-        let cancellable = NetworkImage.shared.loadImage(url)
-            .sink { loadedImage in
-                if requestId == uuid {
-                    image = loadedImage
-                    isLoading = false
-                }
-            }
-        
-        NetworkImage.shared.track(uuid, cancellable: cancellable)
-    }
-    
-    private func cancel() {
-        if let uuid = requestId {
-            NetworkImage.shared.cancel(uuid)
-        }
+        let loadedImage = await Network.shared.image(urlString)
+        image = loadedImage
+        isLoading = false
     }
 }

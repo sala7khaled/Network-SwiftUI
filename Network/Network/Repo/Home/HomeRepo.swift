@@ -13,9 +13,8 @@ protocol HomeRepoProtocol {
 }
 
 class HomeRepo: HomeRepoProtocol {
-    let network = Network()
     
     func getProducts(params: ProductParam) -> AnyPublisher<BaseResponse<[ProductModel]>, APIError> {
-        return network.call(service: HomeService.getProducts(params), type: BaseResponse<[ProductModel]>.self)
+        return Network.shared.call(service: HomeService.getProducts(params), type: BaseResponse<[ProductModel]>.self)
     }
 }
