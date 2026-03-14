@@ -11,6 +11,8 @@ import Foundation
 struct ProductParam: Encodable {
     var limit: Int
     var skip: Int
+    var order: String
+    var sortBy: String
 }
 
 

@@ -155,8 +155,13 @@ extension View {
         }
     }
     
-    func copyable(title: String = String(localized: "copy"), text: String, color: Color = .blue, icon: String = "square.on.square") -> some View {
-        self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon))
+    func copyable(title: String = String(localized: "copy"),
+                  text: String,
+                  color: Color = .blue,
+                  icon: String = "square.on.square",
+                  enableSwipe: Bool = true,
+                  enableMenu: Bool = true) -> some View {
+        self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon, swipe: enableSwipe, menu: enableMenu))
     }
 
 }
@@ -167,21 +172,27 @@ fileprivate struct CopyableModifier: ViewModifier {
     let text: String
     let color: Color
     let icon: String
+    let swipe: Bool
+    let menu: Bool
     
     func body(content: Content) -> some View {
         content
-            .swipeActions(edge: .trailing) {
-                Button {
-                    UIPasteboard.general.string = text
-                } label: {
-                    Label(title, systemImage: icon)
+            .applyIf(swipe, transform: { view in
+                view.swipeActions(edge: .trailing) {
+                    Button {
+                        UIPasteboard.general.string = text
+                    } label: {
+                        Label(title, systemImage: icon)
+                    }
+                    .tint(color)
                 }
-                .tint(color)
-            }
-            .contextMenu {
-                Button(title) {
-                    UIPasteboard.general.string = text
+            })
+            .applyIf(menu, transform: { view in
+                view.contextMenu {
+                    Button(title) {
+                        UIPasteboard.general.string = text
+                    }
                 }
-            }
+            })
     }
 }

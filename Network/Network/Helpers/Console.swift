@@ -14,14 +14,14 @@ open class Console {
                     request: URLRequest?,
                     data: Data?,
                     code: Int,
-                    time: TimeInterval = 0,
+                    elapsed: TimeInterval = 0,
                     error: APIError? = nil) {
         
         let url = request?.url?.absoluteString ?? (service.url + service.path)
         let headers = (request?.allHTTPHeaderFields ?? [:]).prettyPrint()
         let body = request?.httpBody.prettyPrint().truncated(500)
         let response = data.prettyPrint().truncated(3000)
-        let ms = Int(time * 1000).formatted(.number.grouping(.automatic))
+        let ms = Int(elapsed * 1000).formatted(.number.grouping(.automatic))
         
         print("\n" + separator)
         log("🌐 \(request?.httpMethod ?? "")", url)
@@ -54,11 +54,12 @@ open class Console {
                                 method: request?.httpMethod ?? "",
                                 headers: request?.allHTTPHeaderFields ?? [:],
                                 code: code,
-                                time: time,
+                                elapsed: elapsed,
+                                time: Date(),
                                 body: request?.httpBody,
                                 response: data ?? Data(),
                                 error: error)
-        SentryManager.shared.add(entry)
+        SentryManager.shared.addRequest(entry)
     }
     
     static func log(_ tag: String, _ text: Any) {
@@ -72,5 +73,25 @@ open class Console {
         print("\n" + separator)
         log("❌ Error", "\(error.type)".capitalized + " (code: \(error.code)) \n   \(error.message ?? "message: nil")")
         print(separator)
+    }
+    
+    // MARK: - Image
+    static func logImage(url: URL, data: Data?, error: Error? = nil, elapsed: TimeInterval) {
+        let urlString = url.absoluteString
+        let endPoint = url.lastPathComponent
+        
+        let entry = SentryEntry(
+            url: urlString,
+            endPoint: endPoint,
+            method: "GET",
+            headers: [:],
+            code: error == nil ? 200 : 0,
+            elapsed: elapsed,
+            time: Date(),
+            body: nil,
+            response: data,
+            error: error as? APIError
+        )
+        SentryManager.shared.addImage(entry)
     }
 }

@@ -60,9 +60,7 @@ struct HomeView: View {
                     HStack(alignment: .center, spacing: 16) {
                         
                         ImageView(product.thumbnail)
-                            .frame(width: 80, height: 80)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 8)
+                            .frame(width: 64, height: 64)
                             .background(.thinMaterial)
                             .cornerRadius(10)
                         
@@ -70,11 +68,12 @@ struct HomeView: View {
                             
                             Text(product.title?.capitalized ?? "")
                                 .font(.headline)
+                                .lineLimit(1)
                             
                             if let description = product.description {
                                 Text(description)
                                     .font(.caption)
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(.secondary)
                                     .lineLimit(1)
                             }
                             
@@ -82,7 +81,7 @@ struct HomeView: View {
                                 Text(product.category?.capitalized ?? "")
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 4)
-                                    .font(.footnote)
+                                    .font(.caption)
                                     .foregroundColor(.gray)
                                     .lineLimit(1)
                                     .overlay(

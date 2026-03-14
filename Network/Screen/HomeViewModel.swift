@@ -23,7 +23,7 @@ class HomeViewModel: ObservableObject {
     private let homeRepo = HomeRepo()
     private var cancellables = Set<AnyCancellable>()
     
-    private var params = ProductParam(limit: 25, skip: 0)
+    private var params = ProductParam(limit: 25, skip: 0, order: "asc", sortBy: "title")
     private var isPaginating = false
     
     

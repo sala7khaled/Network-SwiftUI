@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "{ %lld bytes }" : {
+    "%@" : {
 
     },
     "%lld" : {
@@ -44,7 +44,24 @@
       }
     },
     "🔐" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔐"
+          }
+        }
+      }
+    },
+    "apiRequests" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API Requests"
+          }
+        }
+      }
     },
     "body" : {
       "localizations" : {
@@ -56,12 +73,22 @@
         }
       }
     },
-    "clear" : {
+    "cached" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear"
+            "value" : "Cached"
+          }
+        }
+      }
+    },
+    "clearHistory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear History"
           }
         }
       }
@@ -184,12 +211,32 @@
         }
       }
     },
+    "imageRequests" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image Requests"
+          }
+        }
+      }
+    },
     "loading" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading..."
+          }
+        }
+      }
+    },
+    "notCached" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Cached"
           }
         }
       }
@@ -230,6 +277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retry"
+          }
+        }
+      }
+    },
+    "selectTab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Tab"
           }
         }
       }

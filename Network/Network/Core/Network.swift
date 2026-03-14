@@ -54,7 +54,7 @@ final class Network: NetworkProtocol {
                 let result: T = try self.handle(response: response, with: data)
                 let elapsed = Date().timeIntervalSince(startTime)
                 
-                Console.log(service: service, request: request, data: data, code: response.statusCode, time: elapsed)
+                Console.log(service: service, request: request, data: data, code: response.statusCode, elapsed: elapsed)
                 return result
             }
             .mapError { error -> APIError in
@@ -62,7 +62,7 @@ final class Network: NetworkProtocol {
                 let apiError = (error as? APIError) ?? APIError(type: .unknown, message: error.localizedDescription)
                 let elapsed = Date().timeIntervalSince(startTime)
                 
-                Console.log(service: service, request: request, data: responseData, code: apiError.code, time: elapsed, error: apiError)
+                Console.log(service: service, request: request, data: responseData, code: apiError.code, elapsed: elapsed, error: apiError)
                 return apiError
             }
             .receive(on: DispatchQueue.main)

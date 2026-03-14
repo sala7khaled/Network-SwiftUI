@@ -1,5 +1,5 @@
 //
-//  NetworkImageLoader.swift
+//  Network + Image.swift
 //  Networking
 //
 //  Created by Salah Khaled on 12/03/2026.
@@ -13,20 +13,27 @@ extension Network {
     func image(_ urlString: String) async -> UIImage? {
         
         guard let url = URL(string: urlString) else { return nil }
-        guard imageCache[url] == nil else { return imageCache[url] }
+        if let cached = imageCache[url] { return cached }
         
+        let start = Date()
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            if let image = UIImage(data: data) {
-                imageCache[url] = image
-                return image
-            }
+            let elapsed = Date().timeIntervalSince(start)
+            
+            let image = UIImage(data: data)
+            if let img = image { imageCache[url] = img }
+            
+            Console.logImage(url: url, data: data, elapsed: elapsed)
+            return image
+            
         } catch {
+            let elapsed = Date().timeIntervalSince(start)
+            Console.logImage(url: url, data: nil, error: error, elapsed: elapsed)
             return nil
         }
-        return nil
     }
 }
+
 
 // MARK: - Image View
 struct ImageView: View {
@@ -38,14 +45,14 @@ struct ImageView: View {
     // MARK: - Properties
     let urlString: String?
     let loadingView: AnyView
-    let holderView: AnyView
+    let holderView: Image
     
     // MARK: - Private
-    private let defaultHolder = AnyView(Image(systemName: "photo.badge.exclamationmark.fill"))
+    private let defaultHolder = Image(systemName: "photo.badge.exclamationmark.fill")
     private let defaultLoading = AnyView(ProgressView())
     
     // MARK: - Init
-    init(_ url: String?, loading: AnyView? = nil, placeholder: AnyView? = nil) {
+    init(_ url: String?, loading: AnyView? = nil, placeholder: Image? = nil) {
         self.urlString = url
         self.loadingView = loading ?? defaultLoading
         self.holderView = placeholder ?? defaultHolder
@@ -57,13 +64,12 @@ struct ImageView: View {
             if let image = image {
                 Image(uiImage: image)
                     .resizable()
-                    .scaledToFit()
+                    .scaledToFill()
             } else if isLoading {
                 loadingView
             } else {
                 holderView
                     .symbolRenderingMode(.multicolor)
-                    .opacity(0.5)
             }
         }
         .task(id: urlString) {
