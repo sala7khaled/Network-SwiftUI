@@ -24,11 +24,11 @@ open class Console {
         let ms = Int(elapsed * 1000).formatted(.number.grouping(.automatic))
         
         print("\n" + separator)
-        log("🌐 \(request?.httpMethod ?? "")", url)
+        log("\(Connectivity.isOnline() ? "🛜" : "⚠️") \(request?.httpMethod ?? "")", url)
         log("🧩 Headers", "\n\(headers)")
         log("📦 Body", body == "" ? "{ }" : "\n\(body ?? "")")
         log("#️⃣ Status code", code)
-        log("📂 Response", "\(service.responseType) (\(ms) ms) \n\(response)")
+        log("📂 Response", "(\(ms) ms) \n\(response)")
         
         
         let path = url.replacingOccurrences(of: API.baseUrl, with: "")
@@ -58,7 +58,8 @@ open class Console {
                                 time: Date(),
                                 body: request?.httpBody,
                                 response: data ?? Data(),
-                                error: error)
+                                error: error,
+                                isCache: !Connectivity.isOnline() && code == 200)
         SentryManager.shared.addRequest(entry)
     }
     

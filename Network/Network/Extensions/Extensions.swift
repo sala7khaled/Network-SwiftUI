@@ -10,6 +10,12 @@ import SwiftUI
 
 // MARK: - String
 extension String {
+    
+    var capitalFirst: String {
+        guard let first = first else { return self }
+        return first.uppercased() + dropFirst()
+    }
+    
     func truncated(_ max: Int) -> String {
         guard count > max else { return self }
         

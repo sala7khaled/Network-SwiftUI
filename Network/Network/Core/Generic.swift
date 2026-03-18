@@ -33,15 +33,8 @@ struct APIError: Error {
     var code: Int = 0
     var message: String?
     
-    init(type: APIErrorType, code: Int = 0, message: String? = nil) {
-        self.type = type
-        self.code = code
-        self.message = message ?? type.localized
-    }
-    
     func localize() -> String {
-        let message = String(localized: .init(self.message ?? ""))
-        return type == .server ? "\(message) Status code: \(code)" : message
+        String(localized: .init(message ?? type.localized))
     }
 }
 

@@ -7,6 +7,10 @@
 
 import Foundation
 
+// MARK: - Repo
+class Repo { let network = Network.shared }
+
+
 // MARK: - Methods
 enum HTTPMethod: String {
     case GET
@@ -15,6 +19,7 @@ enum HTTPMethod: String {
     case PATCH
     case DELETE
 }
+
 
 // MARK: - Headers
 enum APIHeader {
@@ -41,5 +46,4 @@ protocol ServiceProtocol {
     var parameters: Parameters? { get }
     var headers: Headers? { get }
     var body: Encodable? { get }
-    var responseType: Decodable.Type { get }
 }

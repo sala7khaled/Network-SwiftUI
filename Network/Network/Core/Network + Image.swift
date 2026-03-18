@@ -17,7 +17,7 @@ extension Network {
         
         let start = Date()
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await session.data(from: url)
             let elapsed = Date().timeIntervalSince(start)
             
             let image = UIImage(data: data)

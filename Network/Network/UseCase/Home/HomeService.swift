@@ -49,12 +49,4 @@ enum HomeService: ServiceProtocol {
         default: nil
         }
     }
-    
-    
-    var responseType: Decodable.Type {
-        switch self {
-        case .getProducts: BaseResponse<[ProductModel]>.self
-        default: EmptyResponse.self
-        }
-    }
 }

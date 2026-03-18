@@ -21,6 +21,7 @@ struct SentryEntry: Identifiable {
     var body: Data?
     var response: Data?
     var error: APIError?
+    var isCache: Bool = false
 }
 
 // MARK: - Manager
@@ -57,7 +58,7 @@ struct SentryView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selectedEntry: SentryEntry? = nil
     @State private var selectedImage: SentryEntry? = nil
-    @State private var sentryTab = 1
+    @State private var sentryTab = 0
     
     init(manager: SentryManager = .shared) {
         self.manager = manager
@@ -103,9 +104,35 @@ struct SentryView: View {
     @ViewBuilder
     private var content: some View {
         switch sentryTab {
-        case 0: requestList
-        case 1: imageList
-        default: requestList
+        case 0:
+            if manager.requests.isEmpty {
+                emptyView(sentryTab)
+            } else {
+                requestList
+            }
+        case 1:
+            if manager.images.isEmpty {
+                emptyView(sentryTab)
+            } else {
+                imageList
+            }
+        default:
+            EmptyView()
+        }
+    }
+    
+    // MARK: - Empty View
+    @ViewBuilder
+    private func emptyView(_ index: Int) -> some View {
+        
+        VStack(spacing: 8) {
+            Spacer()
+            Image(systemName: index == 0 ? "network.slash" : "rectangle.slash")
+                .foregroundStyle(.secondary)
+            Text(.emptySentry(index == 0 ? String(localized: "requests") : String(localized: "images")))
+                .foregroundStyle(.secondary)
+                .font(.caption)
+            Spacer()
         }
     }
     
@@ -113,6 +140,7 @@ struct SentryView: View {
     // MARK: - Request List
     @ViewBuilder
     var requestList: some View {
+        
         List(manager.requests) { entry in
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .center) {
@@ -130,8 +158,8 @@ struct SentryView: View {
                             .bold()
                     }
                     Spacer()
-                    Text(String(entry.code))
-                        .foregroundColor(entry.code.color())
+                    Text(entry.isCache ? String(localized: "cache") : String(entry.code))
+                        .foregroundColor(entry.isCache ? .green : entry.code.color())
                         .font(.subheadline)
                         .bold()
                 }
@@ -168,7 +196,6 @@ struct SentryView: View {
     // MARK: - Request List
     @ViewBuilder
     var imageList: some View {
-        
         List(manager.images) { entry in
             
             let cachedImage = URL(string: entry.url).flatMap { Network.shared.imageCache[$0] }
@@ -255,7 +282,8 @@ struct SentryView: View {
                                        code: 200,
                                        elapsed: 10,
                                        time: Date(),
-                                       response: Data("Sample response".utf8)))
+                                       response: Data("Sample response".utf8),
+                                       isCache: false))
         
         manager.addImage(SentryEntry(url: "https://cdn.dummyjson.com/product-images/beauty/red-lipstick/thumbnail.webp",
                                      endPoint: "thumbnail.webp",
@@ -276,7 +304,7 @@ struct SentryView: View {
 
 
 // MARK: - Sentry Detail
-struct SentryDetailView: View {
+fileprivate struct SentryDetailView: View {
     
     let entry: SentryEntry
     @Environment(\.dismiss) private var dismiss
@@ -290,6 +318,7 @@ struct SentryDetailView: View {
                 bodySection
                 responseSection
             }
+            .scrollIndicators(.hidden)
             .listStyle(.insetGrouped)
             .navigationTitle(entry.endPoint)
             .toolbar {
@@ -326,10 +355,10 @@ struct SentryDetailView: View {
                             .padding(.vertical, 4)
                     }
                     Spacer()
-                    Text("\(entry.code)")
+                    Text(entry.isCache ? String(localized: "cache") : String(entry.code))
+                        .foregroundColor(entry.isCache ? .green : entry.code.color())
                         .font(.subheadline)
                         .bold()
-                        .foregroundColor(entry.code.color())
                 }
                 .padding(.vertical, 4)
                 
@@ -526,7 +555,7 @@ fileprivate struct ChipListView: View {
     }
     
     init(parameters: [URLQueryItem], sorted: Bool = true) {
-        let mapped = parameters.map { ChipItem(key: "? \($0.name)  =", value: ($0.value == "" ? "__" : $0.value) ?? "__") }
+        let mapped = parameters.map { ChipItem(key: $0.name, value: ($0.value == "" ? "__" : $0.value) ?? "__") }
         self.items = sorted
         ? mapped.sorted { $0.key < $1.key }
         : mapped
@@ -619,7 +648,7 @@ fileprivate struct FlexibleView<Data: Collection, Content: View>: View where Dat
 
 
 // MARK: - Image Viewer
-struct ImageViewer: View {
+fileprivate struct ImageViewer: View {
     
     let title: String
     let image: UIImage

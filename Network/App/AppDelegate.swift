@@ -28,7 +28,6 @@ struct AppDelegate: App {
                 .fullScreenCover(isPresented: $showSentry) {
                     SentryView()
                 }
-            
         }
     }
 }

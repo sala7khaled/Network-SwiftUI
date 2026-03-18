@@ -10,90 +10,83 @@ import SystemConfiguration
 import Combine
 
 
-// MARK: - Protocol
-protocol NetworkProtocol {
-    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) -> AnyPublisher<T, APIError>
-}
-
-
 // MARK: - Network
-final class Network: NetworkProtocol {
+final class Network {
     
     // MARK: - Properties
     static let shared = Network()
-    private let session: URLSession
+    private(set) var session: URLSession
     private let requestTime: TimeInterval = 30
     private let decoder = JSONDecoder()
     @Published var imageCache = [URL: UIImage]()
     
     // MARK: - Init
-    init(session: URLSession = .shared) {
+    private init(session: URLSession = .shared) {
         self.session = session
     }
     
     // MARK: - Call
-    func call<T: Decodable>(service: ServiceProtocol, type: T.Type) -> AnyPublisher<T, APIError> {
+    func call<T: Decodable>(_ service: ServiceProtocol) async throws -> T {
         
-        guard let request = URLRequest(service: service,
-                                       cachePolicy: cachePolicy(service.method == .GET),
-                                       timeoutInterval: requestTime) else {
-            return Fail<T, APIError>(error: APIError(type: .url)).eraseToAnyPublisher()
-        }
+        guard let request = URLRequest(service: service, cachePolicy: cachePolicy(service.method == .GET), timeoutInterval: requestTime)
+        else { throw APIError(type: .url) }
         
         let startTime = Date()
-        var responseData: Data?
         
-        return session
-            .dataTaskPublisher(for: request)
-            .subscribe(on: DispatchQueue.global(qos: .background))
-            .tryMap { data, response -> T in
-                
-                responseData = data
-                guard let response = response as? HTTPURLResponse else { throw APIError(type: .request) }
-                
-                let result: T = try self.handle(response: response, with: data)
-                let elapsed = Date().timeIntervalSince(startTime)
-                
-                Console.log(service: service, request: request, data: data, code: response.statusCode, elapsed: elapsed)
-                return result
-            }
-            .mapError { error -> APIError in
-                
-                let apiError = (error as? APIError) ?? APIError(type: .unknown, message: error.localizedDescription)
-                let elapsed = Date().timeIntervalSince(startTime)
-                
-                Console.log(service: service, request: request, data: responseData, code: apiError.code, elapsed: elapsed, error: apiError)
-                return apiError
-            }
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else { throw APIError(type: .request) }
+            
+            let result: T = try mapResponse(response: httpResponse, with: data)
+            let elapsed = Date().timeIntervalSince(startTime)
+            Console.log(service: service, request: request, data: data, code: httpResponse.statusCode, elapsed: elapsed)
+            return result
+        } catch {
+            let apiError = mapError(error)
+            
+            let elapsed = Date().timeIntervalSince(startTime)
+            Console.log(service: service, request: request, data: nil, code: apiError.code, elapsed: elapsed, error: apiError)
+            throw apiError
+        }
     }
     
-    // MARK: - Handle
-    private func handle<T: Decodable>(response: HTTPURLResponse, with data: Data?) throws -> T {
+    
+    // MARK: - Response
+    private func mapResponse<T: Decodable>(response: HTTPURLResponse, with data: Data?) throws -> T {
         
-        guard Connectivity.isOnline() else { throw APIError(type: .network) }
         guard let apiData = data else { throw APIError(type: .request, code: response.statusCode) }
         
-        switch response.statusCode {
+        let statusCode = response.statusCode
+        switch statusCode {
         case 200...299:
             do {
                 return try decoder.decode(T.self, from: apiData)
             } catch let decodeError as DecodingError {
-                throw APIError(type: .parsing, code: response.statusCode, message: decodeError.errorPath)
+                throw APIError(type: .parsing, code: statusCode, message: decodeError.errorPath)
             } catch {
-                throw APIError(type: .parsing, code: response.statusCode)
+                throw APIError(type: .parsing, code: statusCode)
             }
             
-        case 401:
-            throw APIError(type: .unauthorized, code: response.statusCode)
+        case 400...499:
+            throw APIError(type: statusCode == 401 ? .unauthorized : .request, code: statusCode)
             
         default:
             guard let failResponse = try? decoder.decode(FailResponse.self, from: apiData) else {
-                throw APIError(type: .server, code: response.statusCode)
+                throw APIError(type: .server, code: statusCode)
             }
-            
-            throw APIError(type: .backend, code: failResponse.code ?? response.statusCode, message: failResponse.message)
+            throw APIError(type: .backend, code: failResponse.code ?? statusCode, message: failResponse.message)
+        }
+    }
+    
+    // MARK: - Error
+    func mapError(_ error: Error) -> APIError {
+        switch error {
+        case let apiError as APIError:
+            return apiError
+        case let urlError as URLError:
+            return .init(type: .network, message: urlError.localizedDescription.capitalFirst)
+        default:
+            return .init(type: .unknown, message: error.localizedDescription.capitalFirst)
         }
     }
 }
@@ -105,4 +98,6 @@ private extension Network {
         ? (Connectivity.isOnline() ? .reloadIgnoringCacheData : .returnCacheDataDontLoad)
         : .reloadIgnoringCacheData
     }
+    
+
 }

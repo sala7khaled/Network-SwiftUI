@@ -4,9 +4,6 @@
     "%@" : {
 
     },
-    "%lld" : {
-
-    },
     "%lld / %lld" : {
       "localizations" : {
         "en" : {
@@ -73,6 +70,16 @@
         }
       }
     },
+    "cache" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache"
+          }
+        }
+      }
+    },
     "cached" : {
       "localizations" : {
         "en" : {
@@ -99,6 +106,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copy"
+          }
+        }
+      }
+    },
+    "emptySentry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No %@ found. Maybe start a little noise?"
           }
         }
       }
@@ -141,7 +159,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Failed to decode response."
+            "value" : "Error parsing server response."
           }
         }
       }
@@ -152,7 +170,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Network request failed."
+            "value" : "The request is unavailable."
           }
         }
       }
@@ -221,6 +239,16 @@
         }
       }
     },
+    "images" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Images"
+          }
+        }
+      }
+    },
     "loading" : {
       "localizations" : {
         "en" : {
@@ -257,6 +285,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Request"
+          }
+        }
+      }
+    },
+    "requests" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requests"
           }
         }
       }
