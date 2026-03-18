@@ -12,7 +12,7 @@ class Repo { let network = Network.shared }
 
 
 // MARK: - Methods
-enum HTTPMethod: String {
+enum HTTPMethod: String, CaseIterable {
     case GET
     case POST
     case PUT

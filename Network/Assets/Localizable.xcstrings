@@ -4,6 +4,9 @@
     "%@" : {
 
     },
+    "%lld" : {
+
+    },
     "%lld / %lld" : {
       "localizations" : {
         "en" : {
@@ -50,7 +53,18 @@
         }
       }
     },
+    "all" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALL"
+          }
+        }
+      }
+    },
     "apiRequests" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -230,6 +244,7 @@
       }
     },
     "imageRequests" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -240,6 +255,7 @@
       }
     },
     "images" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -290,6 +306,7 @@
       }
     },
     "requests" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -319,6 +336,26 @@
         }
       }
     },
+    "search" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        }
+      }
+    },
+    "selectMethod" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Method"
+          }
+        }
+      }
+    },
     "selectTab" : {
       "localizations" : {
         "en" : {
@@ -338,6 +375,9 @@
           }
         }
       }
+    },
+    "statistics" : {
+
     },
     "token" : {
       "localizations" : {

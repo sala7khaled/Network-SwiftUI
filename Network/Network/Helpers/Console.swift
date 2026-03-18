@@ -24,7 +24,7 @@ open class Console {
         let ms = Int(elapsed * 1000).formatted(.number.grouping(.automatic))
         
         print("\n" + separator)
-        log("\(Connectivity.isOnline() ? "🛜" : "⚠️") \(request?.httpMethod ?? "")", url)
+        log("\(Connectivity.isOnline() ? "🛜" : "⚠️") \(service.method.rawValue)", url)
         log("🧩 Headers", "\n\(headers)")
         log("📦 Body", body == "" ? "{ }" : "\n\(body ?? "")")
         log("#️⃣ Status code", code)
@@ -51,7 +51,7 @@ open class Console {
         // MARK: - Sentry
         let entry = SentryEntry(url: url,
                                 endPoint: endPoint,
-                                method: request?.httpMethod ?? "",
+                                method: service.method,
                                 headers: request?.allHTTPHeaderFields ?? [:],
                                 code: code,
                                 elapsed: elapsed,
@@ -84,7 +84,7 @@ open class Console {
         let entry = SentryEntry(
             url: urlString,
             endPoint: endPoint,
-            method: "GET",
+            method: .GET,
             headers: [:],
             code: error == nil ? 200 : 0,
             elapsed: elapsed,
