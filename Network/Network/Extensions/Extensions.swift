@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import ActivityKit
 
 // MARK: - String
 extension String {
@@ -143,7 +144,7 @@ extension Int {
         case 200 ..< 300: return .green
         case 300 ..< 400: return .yellow
         case 400 ..< 500: return .orange
-        default: return .gray
+        default: return .red
         }
     }
 }
@@ -186,7 +187,7 @@ fileprivate struct CopyableModifier: ViewModifier {
             .applyIf(swipe, transform: { view in
                 view.swipeActions(edge: .trailing) {
                     Button {
-                        UIPasteboard.general.string = text
+                        copyText()
                     } label: {
                         Label(title, systemImage: icon)
                     }
@@ -196,9 +197,14 @@ fileprivate struct CopyableModifier: ViewModifier {
             .applyIf(menu, transform: { view in
                 view.contextMenu {
                     Button(title) {
-                        UIPasteboard.general.string = text
+                        copyText()
                     }
                 }
             })
+    }
+    
+    private func copyText() {
+        UIPasteboard.general.string = text
+        Toaster.shared.show("\(title) copied")
     }
 }

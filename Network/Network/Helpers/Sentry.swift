@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import Charts
 
 // MARK: - Model
 struct SentryEntry: Identifiable {
@@ -54,8 +55,8 @@ final class SentryManager: ObservableObject {
 // MARK: - Sentry
 struct SentryView: View {
     
-    // MARK: - Tab
-    enum SentryTab: Int, CaseIterable, Identifiable {
+    // MARK: - Models
+    private enum SentryTab: Int, CaseIterable, Identifiable {
         case requests = 0
         case images = 1
         
@@ -76,6 +77,13 @@ struct SentryView: View {
         }
     }
     
+    private struct StatItem: Identifiable {
+        let id = UUID()
+        let title: String
+        let value: String
+        var color: Color = .primary
+    }
+    
     // MARK: - Properties
     @ObservedObject private var manager = SentryManager.shared
     @Environment(\.dismiss) private var dismiss
@@ -83,8 +91,8 @@ struct SentryView: View {
     @State private var selectedImage: SentryEntry? = nil
     @State private var sentryTab: SentryTab = .requests
     @State private var searchText = ""
-    @FocusState private var isSearchFocused: Bool
     @State private var selectedMethod: HTTPMethod? = nil
+    @State private var showChart = false
     
     
     // MARK: - Init
@@ -155,19 +163,11 @@ struct SentryView: View {
                     }
                 }
             }
-            .searchable(
-                text: $searchText, placement: .automatic, prompt: "search"
-            )
+            .searchable(text: $searchText, placement: .automatic, prompt: "search")
             .searchScopes($selectedMethod) {
                 Text("all").tag(nil as HTTPMethod?)
                 ForEach(HTTPMethod.allCases, id: \.self) { method in
                     Text(method.rawValue).tag(method as HTTPMethod?)
-                }
-            }
-            .focused($isSearchFocused)
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    isSearchFocused = true
                 }
             }
         }
@@ -178,17 +178,15 @@ struct SentryView: View {
     @ViewBuilder
     private var content: some View {
         let isEmpty = sentryTab == .requests
-        ? filteredRequests.isEmpty
-        : filteredImages.isEmpty
+        ? requestArray.isEmpty
+        : imageArray.isEmpty
         
         if isEmpty {
             emptyListView
         } else {
             switch sentryTab {
-            case .requests:
-                requestList
-            case .images:
-                imageList
+            case .requests: requestList
+            case .images: imageList
             }
         }
     }
@@ -196,7 +194,6 @@ struct SentryView: View {
     // MARK: - Empty View
     @ViewBuilder
     var emptyListView: some View {
-        
         let title = String(localized: String.LocalizationValue(sentryTab.title)).lowercased()
         
         VStack(spacing: 8) {
@@ -210,70 +207,60 @@ struct SentryView: View {
         }
     }
     
-    
     // MARK: - Request List
     @ViewBuilder
     var requestList: some View {
         
         List {
+            statSection
             Section {
-                Text("\(filteredRequests.filter { $0.code < 400 }.count)")
-            } header: {
-                Text("statistics")
-                    .font(.caption)
-                    .bold()
-            }
-
-            Section {
-                if filteredRequests.isEmpty {
-                    emptyListView
-                } else {
-                    ForEach(filteredRequests) { entry in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(alignment: .center) {
-                                HStack {
-                                    Text(entry.method.rawValue)
-                                        .font(.caption)
-                                        .fontWeight(.medium)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(.gray.opacity(0.2))
-                                        .cornerRadius(6)
-                                    
-                                    Text(entry.endPoint)
-                                        .font(.caption)
-                                        .bold()
-                                }
-                                Spacer()
-                                Text(entry.isCache ? String(localized: "cache") : String(entry.code))
-                                    .foregroundColor(entry.isCache ? .green : entry.code.color())
-                                    .font(.subheadline)
+                ForEach(requestArray) { entry in
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .center) {
+                            HStack {
+                                Text(entry.method.rawValue)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(.gray.opacity(0.2))
+                                    .cornerRadius(6)
+                                
+                                Text(entry.endPoint)
+                                    .font(.caption)
                                     .bold()
                             }
-                            
-                            Text(entry.url)
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                                .lineLimit(2)
-                            
-                            HStack {
-                                if let error = entry.error {
-                                    Text(error.type.rawValue.capitalized)
-                                        .font(.caption)
-                                        .fontWeight(.medium)
-                                        .foregroundStyle(.red)
-                                }
-                                Text("\(Int(entry.elapsed * 1000)) ms")
-                                Spacer()
-                                Text("\(entry.time.formatted(date: .omitted, time: .standard))")
-                            }
-                            .font(.caption2)
-                            .foregroundColor(.gray)
+                            Spacer()
+                            Text(entry.isCache ? String(localized: "cache") : String(entry.code))
+                                .foregroundColor(entry.isCache ? .green : entry.code.color())
+                                .font(.subheadline)
+                                .bold()
                         }
-                        .contentShape(Rectangle())
-                        .onTapGesture { selectedEntry = entry }
-                        .copyable(text: entry.url)
+                        
+                        Text(entry.url)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                        
+                        HStack {
+                            if let error = entry.error {
+                                Text(error.type.rawValue.capitalized)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.red)
+                            }
+                            Text("\(Int(entry.elapsed * 1000)) ms")
+                            Spacer()
+                            Text("\(entry.time.formatted(date: .omitted, time: .standard))")
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.gray)
                     }
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedEntry = entry }
+                    .copyable(title: String(localized: "curl"),
+                              text: entry.curlString,
+                              icon: "curlybraces.square.fill")
                 }
             }
         }
@@ -282,12 +269,92 @@ struct SentryView: View {
             SentryDetailView(entry: entry)
                 .presentationDetents([.medium, .large])
         }
+        
+    }
+    
+    // MARK: - Stat Section
+    @ViewBuilder
+    var statSection: some View {
+        
+        let total = requestArray.count
+        let successCount = requestArray.filter { (200...299).contains($0.code) }.count
+        let success = total == 0 ? 0 : Int((Double(successCount) / Double(total)) * 100)
+        let avgTime = requestArray.isEmpty ? 0 : requestArray.map(\.elapsed).reduce(0, +) / Double(total)
+        let totalTime = requestArray.map(\.elapsed).reduce(0, +)
+        
+        let statsData: [StatItem] = [
+            .init(title: String(localized: "total"), value: "\(total)"),
+            .init(title: String(localized: "success"), value: "\(success)%"),
+            .init(title: String(localized: "avgTime"), value: Int(avgTime * 1000).formatted() + " ms"),
+            .init(title: String(localized: "total"), value: Int(totalTime * 1000).formatted() + " ms")
+        ]
+        
+        let chartData: [StatItem] = [
+            .init(title: String(localized: "requests"), value: String(total), color: .blue),
+            .init(title: String(localized: "success"), value: String(successCount), color: .green),
+            .init(title: String(localized: "failed"), value: String(total - successCount), color: .red)
+        ]
+        
+        Section {
+            HStack {
+                ForEach(statsData) { item in
+                    VStack {
+                        Text(item.value)
+                            .font(.caption)
+                            .bold()
+                            .foregroundStyle(item.color)
+                        Text(item.title)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .contentShape(Rectangle())
+            
+            if showChart {
+                Chart(chartData) { item in
+                    BarMark(x: .value("value", Double(item.value) ?? 0), y: .value("type", item.title))
+                        .foregroundStyle(item.color)
+                        .cornerRadius(6)
+                        .annotation(position: .trailing) {
+                            Text(item.value)
+                                .font(.caption2)
+                                .bold()
+                        }
+                }
+                .transition(.opacity.combined(with: .slide))
+                .listRowSeparator(.hidden)
+            }
+            
+        } header: {
+            Button {
+                withAnimation(.easeInOut) { showChart.toggle() }
+            } label: {
+                HStack {
+                    Text("statistics")
+                        .bold()
+                    Spacer()
+                    HStack {
+                        Text(showChart ? "hide" : "more")
+                        Image(systemName: showChart ? "chevron.up" : "chevron.down")
+                    }
+                }
+                .font(.caption)
+            }
+            .buttonStyle(.plain)
+        }
+        .onTapGesture {
+            withAnimation(.easeInOut) {
+                showChart.toggle()
+            }
+        }
     }
     
     // MARK: - Request List
     @ViewBuilder
     var imageList: some View {
-        List(filteredImages) { entry in
+        List(imageArray) { entry in
             
             let cachedImage = URL(string: entry.url).flatMap { Network.shared.imageCache[$0] }
             let isCached = cachedImage != nil
@@ -307,9 +374,7 @@ struct SentryView: View {
                 .frame(width: 84, height: 84)
                 .background(.thinMaterial)
                 .cornerRadius(10)
-                .onTapGesture {
-                    selectedImage = entry
-                }
+                .onTapGesture { selectedImage = entry }
                 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center) {
@@ -359,7 +424,7 @@ struct SentryView: View {
     }
     
     // MARK: - Search
-    private var filteredRequests: [SentryEntry] {
+    private var requestArray: [SentryEntry] {
         manager.requests.filter { entry in
             let matchesSearch = searchText.isEmpty ||
             entry.url.localizedCaseInsensitiveContains(searchText) ||
@@ -371,7 +436,7 @@ struct SentryView: View {
         }
     }
     
-    private var filteredImages: [SentryEntry] {
+    private var imageArray: [SentryEntry] {
         guard !searchText.isEmpty else { return manager.images }
         return manager.images.filter {
             $0.url.localizedCaseInsensitiveContains(searchText) ||
@@ -420,9 +485,11 @@ struct SentryView: View {
 // MARK: - Sentry Detail
 fileprivate struct SentryDetailView: View {
     
+    // MARK: - Properties
     let entry: SentryEntry
     @Environment(\.dismiss) private var dismiss
     
+    // MARK: - Body
     var body: some View {
         NavigationView {
             List {
@@ -436,6 +503,17 @@ fileprivate struct SentryDetailView: View {
             .listStyle(.insetGrouped)
             .navigationTitle(entry.endPoint)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        UIPasteboard.general.string = entry.curlString
+                        Toaster.shared.show(String(localized: "copiedClipboard"))
+                        
+                    } label: {
+                        Image(systemName: "curlybraces")
+                            .font(.system(size: 15))
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
@@ -509,7 +587,7 @@ fileprivate struct SentryDetailView: View {
             view.copyable(title: String(localized: "error"),
                           text: "[\(entry.error!.type.rawValue.capitalized)] \(entry.error!.localize())",
                           color: .red,
-                          icon: "flag.fill")
+                          icon: "exclamationmark.square.fill")
         }
         .copyable(text: copyText)
     }
@@ -564,7 +642,7 @@ fileprivate struct SentryDetailView: View {
                         .font(.caption)
                         .bold()
                     if hasAuth {
-                        Text("🔐")
+                        Image(systemName: "lock.fill")
                             .font(.caption)
                     }
                     Spacer()
@@ -576,7 +654,7 @@ fileprivate struct SentryDetailView: View {
                     view.copyable(title: String(localized: "token"),
                                   text: headers[APIHeader.authorization] ?? "",
                                   color: .orange,
-                                  icon: "lock")
+                                  icon: "lock.rectangle.on.rectangle.fill")
                 }
                 .copyable(text: headers.sorted { $0.key < $1.key }.map { "[\($0.key): \($0.value)]" }.joined(separator: "\n"))
         )
@@ -785,5 +863,29 @@ fileprivate struct ImageViewer: View {
                     }
                 }
         }
+    }
+}
+
+// MARK: - Extensions
+fileprivate extension SentryEntry {
+    var curlString: String {
+        var components = ["curl"]
+        
+        if method != .GET {
+            components.append("-X \(method.rawValue)")
+        }
+        
+        headers.forEach { key, value in
+            components.append("-H \"\(key): \(value)\"")
+        }
+        
+        if let body = body, let bodyString = String(data: body, encoding: .utf8) {
+            let escaped = bodyString.replacingOccurrences(of: "\"", with: "\\\"")
+            components.append("-d \"\(escaped)\"")
+        }
+        
+        components.append("\"\(url)\"")
+        
+        return components.joined(separator: " \\\n  ")
     }
 }
