@@ -205,6 +205,6 @@ fileprivate struct CopyableModifier: ViewModifier {
     
     private func copyText() {
         UIPasteboard.general.string = text
-        Toaster.shared.show("\(title) copied")
+        Toaster.shared.toast("\(title) copied")
     }
 }

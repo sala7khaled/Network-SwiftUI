@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct AppDelegate: App {
     
-    @State private var showSentry = false
+    @State private var showSentry = true
     
     init() {
         Connectivity.start()

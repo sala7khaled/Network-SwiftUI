@@ -166,8 +166,10 @@ struct SentryView: View {
             .searchable(text: $searchText, placement: .automatic, prompt: "search")
             .searchScopes($selectedMethod) {
                 Text("all").tag(nil as HTTPMethod?)
+                    .font(.footnote)
                 ForEach(HTTPMethod.allCases, id: \.self) { method in
                     Text(method.rawValue).tag(method as HTTPMethod?)
+                        .font(.footnote)
                 }
             }
         }
@@ -283,7 +285,7 @@ struct SentryView: View {
         let totalTime = requestArray.map(\.elapsed).reduce(0, +)
         
         let statsData: [StatItem] = [
-            .init(title: String(localized: "total"), value: "\(total)"),
+            .init(title: String(localized: "requests"), value: "\(total)"),
             .init(title: String(localized: "success"), value: "\(success)%"),
             .init(title: String(localized: "avgTime"), value: Int(avgTime * 1000).formatted() + " ms"),
             .init(title: String(localized: "total"), value: Int(totalTime * 1000).formatted() + " ms")
@@ -323,13 +325,12 @@ struct SentryView: View {
                                 .bold()
                         }
                 }
-                .transition(.opacity.combined(with: .slide))
                 .listRowSeparator(.hidden)
             }
             
         } header: {
             Button {
-                withAnimation(.easeInOut) { showChart.toggle() }
+                withAnimation(.linear(duration: 0)) { showChart.toggle() }
             } label: {
                 HStack {
                     Text("statistics")
@@ -344,11 +345,7 @@ struct SentryView: View {
             }
             .buttonStyle(.plain)
         }
-        .onTapGesture {
-            withAnimation(.easeInOut) {
-                showChart.toggle()
-            }
-        }
+        .onTapGesture { withAnimation(.linear(duration: 0)) { showChart.toggle() } }
     }
     
     // MARK: - Request List
@@ -506,7 +503,7 @@ fileprivate struct SentryDetailView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         UIPasteboard.general.string = entry.curlString
-                        Toaster.shared.show(String(localized: "copiedClipboard"))
+                        Toaster.shared.toast(String(localized: "copiedClipboard"))
                         
                     } label: {
                         Image(systemName: "curlybraces")
