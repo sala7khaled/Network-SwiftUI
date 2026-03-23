@@ -40,12 +40,6 @@
         }
       }
     },
-    "%lld%%" : {
-
-    },
-    "🔥" : {
-
-    },
     "all" : {
       "localizations" : {
         "en" : {
@@ -452,9 +446,6 @@
           }
         }
       }
-    },
-    "Toast" : {
-
     },
     "token" : {
       "localizations" : {

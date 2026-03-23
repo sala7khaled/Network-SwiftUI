@@ -142,7 +142,7 @@ struct SentryView: View {
                                 Image(systemName: "antenna.radiowaves.left.and.right")
                                     .font(.system(size: 15, weight: .semibold))
                                     .symbolRenderingMode(selectedMethod != nil ? .multicolor : .hierarchical)
-                                    .symbolEffect(.variableColor)
+                                    .if(selectedMethod != nil) { $0.symbolEffect(.variableColor) }
                                 
                                 if let method = selectedMethod {
                                     Text(method.rawValue)
@@ -503,7 +503,7 @@ fileprivate struct SentryDetailView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         UIPasteboard.general.string = entry.curlString
-                        Toaster.shared.toast(String(localized: "copiedClipboard"))
+                        Toaster.shared.show(String(localized: "copiedClipboard"))
                         
                     } label: {
                         Image(systemName: "curlybraces")
@@ -580,11 +580,11 @@ fileprivate struct SentryDetailView: View {
                     .font(.caption2)
             }
         }
-        .applyIf(hasError) { view in
-            view.copyable(title: String(localized: "error"),
-                          text: "[\(entry.error!.type.rawValue.capitalized)] \(entry.error!.localize())",
-                          color: .red,
-                          icon: "exclamationmark.square.fill")
+        .if(hasError) {
+            $0.copyable(title: String(localized: "error"),
+                        text: "[\(entry.error!.type.rawValue.capitalized)] \(entry.error!.localize())",
+                        color: .red,
+                        icon: "exclamationmark.square.fill")
         }
         .copyable(text: copyText)
     }
@@ -647,11 +647,11 @@ fileprivate struct SentryDetailView: View {
                         .font(.caption2)
                 }
             }
-                .applyIf(hasAuth) { view in
-                    view.copyable(title: String(localized: "token"),
-                                  text: headers[APIHeader.authorization] ?? "",
-                                  color: .orange,
-                                  icon: "lock.rectangle.on.rectangle.fill")
+                .if(hasAuth) {
+                    $0.copyable(title: String(localized: "token"),
+                                text: headers[APIHeader.authorization] ?? "",
+                                color: .orange,
+                                icon: "lock.rectangle.on.rectangle.fill")
                 }
                 .copyable(text: headers.sorted { $0.key < $1.key }.map { "[\($0.key): \($0.value)]" }.joined(separator: "\n"))
         )

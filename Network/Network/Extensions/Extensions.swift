@@ -154,12 +154,10 @@ extension Int {
 extension View {
     
     @ViewBuilder
-    func applyIf<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+    func `if`<Content: View>(_ condition: Bool, _ transform: (Self) -> Content) -> some View {
         if condition {
             transform(self)
-        } else {
-            self
-        }
+        } else { self }
     }
     
     func copyable(title: String = String(localized: "copy"),
@@ -170,7 +168,6 @@ extension View {
                   enableMenu: Bool = true) -> some View {
         self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon, swipe: enableSwipe, menu: enableMenu))
     }
-
 }
 
 // MARK: - Copy
@@ -184,8 +181,8 @@ fileprivate struct CopyableModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .applyIf(swipe, transform: { view in
-                view.swipeActions(edge: .trailing) {
+            .if(swipe) {
+                $0.swipeActions(edge: .trailing) {
                     Button {
                         copyText()
                     } label: {
@@ -193,18 +190,23 @@ fileprivate struct CopyableModifier: ViewModifier {
                     }
                     .tint(color)
                 }
-            })
-            .applyIf(menu, transform: { view in
-                view.contextMenu {
+            }
+            .if(menu) {
+                $0.contextMenu {
                     Button(title) {
                         copyText()
                     }
                 }
-            })
+            }
     }
     
     private func copyText() {
         UIPasteboard.general.string = text
-        Toaster.shared.toast("\(title) copied")
+        
+        let message = title.lowercased().contains("copy")
+        ? String(localized: "copiedClipboard")
+        : (title + " " + String(localized: "copiedClipboard").lowercased())
+        
+        Toaster.shared.show(message)
     }
 }

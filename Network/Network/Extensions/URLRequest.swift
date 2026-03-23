@@ -74,9 +74,9 @@ extension URLComponents {
         self.init(url: url, resolvingAgainstBaseURL: false)
         
         if let parameters = service.parameters {
-            queryItems = parameters.map {
-                URLQueryItem(name: $0.key, value: "\($0.value)")
-            }
+            queryItems = parameters
+                .sorted { $0.key < $1.key }
+                .map { URLQueryItem(name: $0.key, value: "\($0.value)") }
         }
     }
 }

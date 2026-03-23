@@ -7,27 +7,6 @@
 
 import SwiftUI
 import Combine
-import ActivityKit
-import WidgetKit
-
-// MARK: - Toast View
-struct ToastView: View {
-    @ObservedObject var manager: Toaster = .shared
-    
-    var body: some View {
-        if manager.isShowing {
-            Text(manager.message)
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(.green, in: Capsule())
-                .background(.ultraThinMaterial, in: Capsule())
-                .shadow(radius: 2)
-                .transition(.move(edge: .top).combined(with: .opacity))
-                .padding(.top, 10)
-        }
-    }
-}
 
 // MARK: - Toaster
 final class Toaster: ObservableObject {
@@ -38,99 +17,56 @@ final class Toaster: ObservableObject {
     @Published var isShowing: Bool = false
     
     // MARK: - Toast
-    func toast(_ message: String, duration: TimeInterval = 3) {
-        dynamicIsland(message)
-//        self.message = message
-//        withAnimation { self.isShowing = true }
-//        
-//        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-//            withAnimation { self.isShowing = false }
-//        }
-    }
-    
-    func dynamicIsland(_ message: String) {
+    func show(_ message: String, duration: TimeInterval = 3) {
         
-        if #available(iOS 16.1, *) {
-//        if true {
-            startLiveActivity()
-        } else {
-            toast(message)
-        }
+        guard !isShowing else { return }
         
+        self.message = message
+        withAnimation { self.isShowing = true }
         
-    }
-    
-    func startLiveActivity() {
-        let initialContentState = ToastActivityAttributes.ContentState(progress: 0.0, message: "hhhh")
-        let activityAttributes = ToastActivityAttributes(title: "Your Activity")
-        
-        do {
-            let activity = try Activity<ToastActivityAttributes>.request(
-                attributes: activityAttributes,
-                contentState: initialContentState,
-                pushType: nil // Optional: Use if you want to push updates from a server
-            )
-            print("Live activity started: \(activity.id)")
-        } catch {
-            print("Error starting live activity: \(error.localizedDescription)")
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            withAnimation { self.isShowing = false }
         }
     }
-    
-    func updateLiveActivity(progress: Double) {
-        Task {
-            for activity in Activity<ToastActivityAttributes>.activities {
-                let updatedState = ToastActivityAttributes.ContentState(progress: progress, message: "kkkkk")
-                await activity.update(using: updatedState)
-            }
-        }
-    }
-    
-//    @available(iOS 16.1, *)
-//    func endLiveActivity() {
-//        Task {
-//            for activity in Activity<ToastActivityAttributes>.activities {
-//                await activity.end(dismissalPolicy: .immediate)
-//            }
-//        }
-//    }
 }
 
-// MARK: - Activity Attributes
-struct ToastActivityAttributes: ActivityAttributes {
-    struct ContentState: Codable, Hashable {
-        var progress: Double
-        var message: String
-    }
+// MARK: - Toast View
+struct ToastView: View {
+    @ObservedObject var manager: Toaster = .shared
+    @State private var isAnimated = false
     
-    var title: String
-}
-
-// MARK: - Widget / Dynamic Island
-struct MyLiveActivityWidget: Widget {
-    var body: some WidgetConfiguration {
-        ActivityConfiguration(for: ToastActivityAttributes.self) { context in
-            // Lock screen / notification view
-            VStack(alignment: .leading) {
-                Text(context.state.message)
-                ProgressView(value: context.state.progress)
+    var body: some View {
+        if manager.isShowing {
+            HStack(spacing: 14) {
+                Image(systemName: isAnimated ? "checkmark.circle" : "square.on.square")
+                    .font(.system(size: 20))
+                    .symbolRenderingMode(.hierarchical)
+                    .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating))
+                Text(manager.message)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
             .padding()
-        } dynamicIsland: { context in
-            DynamicIsland {
-                // Expanded view
-                DynamicIslandExpandedRegion(.leading) {
-                    Text(context.state.message)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20))
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .colorInvert()
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    withAnimation { isAnimated = true }
                 }
-                DynamicIslandExpandedRegion(.trailing) {
-                    Text("\(Int(context.state.progress * 100))%")
-                }
-            } compactLeading: {
-                Text("Toast")
-            } compactTrailing: {
-                Text("\(Int(context.state.progress * 100))%")
-            } minimal: {
-                Text("🔥")
             }
+            .onDisappear { isAnimated = false }
         }
     }
+}
+
+#Preview {
+    let toaster: Toaster =  {
+       let toaster = Toaster()
+        toaster.isShowing = true
+        toaster.message = "Copied to clipboard"
+        return toaster
+    }()
+    
+    ToastView(manager: toaster)
 }
