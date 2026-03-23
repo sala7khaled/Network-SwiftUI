@@ -3,7 +3,6 @@
 A fully SwiftUI-based iOS networking layer with robust API handling, live image caching, and integrated Sentry logging for monitoring requests and errors. Designed to simplify API calls, provide detailed console logs, and handle errors gracefully.
 
 ## Features ✨
-
 - [x] 🛜 **Connectivity-aware requests**: Handles online/offline scenarios automatically.
 - [x] 📡 **Async/Await Networking**: Modern Swift concurrency support.
 - [x] 📦 **Automatic JSON encoding/decoding**: Uses `Encodable` and `Decodable`.
@@ -12,6 +11,10 @@ A fully SwiftUI-based iOS networking layer with robust API handling, live image 
 - [x] 📝 **Sentry Integration**: Logs API calls, responses, and errors for monitoring.
 - [x] 🔄 **Pull-to-refresh**: Built-in support for refreshing data in SwiftUI lists.
 - [x] 🏁 **Pagination support**: Efficiently loads more data when scrolling.
+
+<br>
+<br>
+<br>
 
 ## Code Example ⚡️
 
@@ -73,6 +76,10 @@ enum Service: ServiceProtocol {
 }
 ```
 
+<br>
+<br>
+<br>
+
 ### Screenshot
 #### Network
 <p align="start">
@@ -81,12 +88,22 @@ enum Service: ServiceProtocol {
   <img src="Screenshots/2.png" width="250">
 </p>
 
-#### Images
-<p align="start">
-  <img src="Screenshots/16.png" width="250">
-  &nbsp;&nbsp;&nbsp;
-  <img src="Screenshots/17.png" width="250">
-</p>
+
+<br>
+<br>
+<br>
+
+
+## Sentry Integration 🛜
+
+All API calls, responses, and errors are automatically logged to **Sentry** via the `SentryManager`. This helps track:
+
+- 🚀 API success/failure events
+- 🕒 Request durations
+- 🐞 Errors and backend failure messages
+- 📦 Response payloads
+
+This provides full observability for networking in production and development environments.
 
 #### Sentry
 <p align="start">
@@ -103,13 +120,22 @@ enum Service: ServiceProtocol {
   <img src="Screenshots/8.png" width="250">
 </p>
 
-#### Detail
+#### Images
+<p align="start">
+  <img src="Screenshots/16.png" width="250">
+  &nbsp;&nbsp;&nbsp;
+  <img src="Screenshots/17.png" width="250">
+</p>
+
+## Detail
+
+#### Success
 <p align="start">
   <img src="Screenshots/9.png" width="250">
   &nbsp;&nbsp;&nbsp;
-  <img src="Screenshots/10.png" width="250">
-  &nbsp;&nbsp;&nbsp;
   <img src="Screenshots/11.png" width="250">
+  &nbsp;&nbsp;&nbsp;
+  <img src="Screenshots/10.png" width="250">
 </p>
 
 #### Failed
@@ -123,14 +149,4 @@ enum Service: ServiceProtocol {
   <img src="Screenshots/15.png" width="250">
 </p>
 
-## Sentry Integration 📝
-
-All API calls, responses, and errors are automatically logged to **Sentry** via the `SentryManager`. This helps track:
-
-- 🚀 API success/failure events
-- 🕒 Request durations
-- 🐞 Errors and backend failure messages
-- 📦 Response payloads
-
-This provides full observability for networking in production and development environments.
 
