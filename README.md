@@ -1,22 +1,21 @@
-# Network SwiftUI 📱
+# 🛜 Network SwiftUI
 
 A fully SwiftUI-based iOS networking layer with robust API handling, live image caching, and integrated Sentry logging for monitoring requests and errors. Designed to simplify API calls, provide detailed console logs, and handle errors gracefully.
 
 ## Features ✨
-- [x] 🛜 **Connectivity-aware requests**: Handles online/offline scenarios automatically.
 - [x] 📡 **Async/Await Networking**: Modern Swift concurrency support.
 - [x] 📦 **Automatic JSON encoding/decoding**: Uses `Encodable` and `Decodable`.
-- [x] 🖼 **Image caching**: Async image loading with in-memory caching.
 - [x] 🚩 **Error handling**: Unified APIError mapping and logging.
 - [x] 📝 **Sentry Integration**: Logs API calls, responses, and errors for monitoring.
-- [x] 🔄 **Pull-to-refresh**: Built-in support for refreshing data in SwiftUI lists.
 - [x] 🏁 **Pagination support**: Efficiently loads more data when scrolling.
+- [x] 💿 **Request caching**: Handles offline scenarios automatically.
+- [x] 🖼 **Image caching**: Async image loading with in-memory caching.
 
 <br>
 <br>
 <br>
 
-## Code Example ⚡️
+## Example
 
 ```swift
 // View
@@ -80,7 +79,8 @@ enum Service: ServiceProtocol {
 <br>
 <br>
 
-### Screenshot
+### Screenshots
+
 #### Network
 <p align="start">
   <img src="Screenshots/1.png" width="250">
@@ -94,7 +94,7 @@ enum Service: ServiceProtocol {
 <br>
 
 
-## Sentry Integration 🛜
+## 🛜 Sentry Integration 
 
 All API calls, responses, and errors are automatically logged to **Sentry** via the `SentryManager`. This helps track:
 
