@@ -17,40 +17,41 @@ A fully SwiftUI-based iOS networking layer with robust API handling, live image 
 <br>
 
 #### Project Structure
-```swift
+```sql
 Network-SwiftUI
 │
 ├── Network/
 │   │
 │   ├── Core/
-│   │   ├── API.swift
-│   │   ├── Components.swift
-│   │   ├── Generic.swift
-│   │   ├── Network.swift
-│   │   └── Network + Image.swift
+│   │   ├── API.swift                  # Defines API endpoints and request configurations
+│   │   ├── Components.swift           # Reusable networking components (headers, params, etc.)
+│   │   ├── Generic.swift              # Generic models or helpers for network responses
+│   │   ├── Network.swift              # Handles requests, response decoding, error mapping, and caching
+│   │   └── Network + Image.swift      # Networking utilities specific to image downloading
 │   │
 │   ├── Extensions/
-│   │   ├── Extensions.swift
-│   │   └── URLRequest.swift
+│   │   ├── Extensions.swift           # Common Swift extensions used across the network layer
+│   │   └── URLRequest.swift           # Extension for building URLRequests & URLComponents
 │   │
 │   ├── Helpers/
-│   │   ├── Connectivity.swift
-│   │   ├── Console.swift
-│   │   └── Sentry.swift
+│   │   ├── Connectivity.swift         # Checks device's internet connection status
+│   │   ├── Console.swift              # Logs requests, responses, errors, Sentry entry, and images
+│   │   └── Sentry.swift               # API requests reporting / crash logging
 │   │
 │   └── UseCase/
-│       ├── Repo.swift
-│       └── Service.swift
+│       ├── Repo.swift                 # Repository layer for data fetching & abstraction
+│       └── Service.swift              # Implementation of service calls for each endpoint
 │
 ├── App/
 ├── Assets/
 ├── Scenes/
-└── etc.../
+└── Etc...
 ```
 
 <br>
 <br>
 <br>
+
 
 ## Example
 
@@ -143,7 +144,6 @@ This provides full observability for networking in development environments.
 - [x] 📦 Response payloads
 
 
-
 #### Sentry
 <p align="start">
   <img src="Screenshots/3.png" width="250">
@@ -159,6 +159,8 @@ This provides full observability for networking in development environments.
   <img src="Screenshots/8.png" width="250">
 </p>
 
+---
+
 #### Images
 <p align="start">
   <img src="Screenshots/16.png" width="250">
@@ -166,9 +168,9 @@ This provides full observability for networking in development environments.
   <img src="Screenshots/17.png" width="250">
 </p>
 
-## Detail
+---
 
-#### Success
+#### Detail (Success)
 <p align="start">
   <img src="Screenshots/9.png" width="250">
   &nbsp;&nbsp;&nbsp;
@@ -177,7 +179,18 @@ This provides full observability for networking in development environments.
   <img src="Screenshots/10.png" width="250">
 </p>
 
-#### Failed
+---
+
+#### Detail (Failed)
+
+All network errors are mapped into `APIError` with types:
+<br>
+`.url` `.request` `.network` `.parsing` `.unauthorized` `.server` `.backend` `.unknown`
+<br>
+Use `error.localize()` to get a user-friendly localized string.
+<br>
+
+
 <p align="start">
   <img src="Screenshots/12.png" width="250">
   &nbsp;&nbsp;&nbsp;
@@ -187,5 +200,3 @@ This provides full observability for networking in development environments.
     &nbsp;&nbsp;&nbsp;
   <img src="Screenshots/15.png" width="250">
 </p>
-
-
