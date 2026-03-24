@@ -143,13 +143,24 @@
         }
       }
     },
-    "emptySentry" : {
+    "emptyDesc" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No %@ found. Maybe start a little noise?"
+            "value" : "Maybe start a little noise?"
+          }
+        }
+      }
+    },
+    "emptyTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No %@ found."
           }
         }
       }

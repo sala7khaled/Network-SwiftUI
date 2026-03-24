@@ -146,8 +146,7 @@ struct SentryView: View {
                                 
                                 if let method = selectedMethod {
                                     Text(method.rawValue)
-                                        .font(.caption)
-                                        .bold()
+                                        .font(.caption.bold())
                                         .padding(.trailing, 6)
                                 }
                             }
@@ -198,13 +197,19 @@ struct SentryView: View {
     var emptyListView: some View {
         let title = String(localized: String.LocalizationValue(sentryTab.title)).lowercased()
         
-        VStack(spacing: 8) {
+        VStack(spacing: 16) {
             Spacer()
             Image(systemName: sentryTab == .requests ? "network.slash" : "rectangle.slash")
-                .foregroundStyle(.secondary)
-            Text(.emptySentry(title))
-                .foregroundStyle(.secondary)
-                .font(.caption)
+                .foregroundStyle(.red)
+                .padding()
+                .background(.red.opacity(0.2))
+                .cornerRadius(16)
+            VStack {
+                Text(.emptyTitle(title))
+                Text(.emptyDesc)
+            }
+            .foregroundStyle(.secondary)
+            .font(.caption)
             Spacer()
         }
     }
@@ -229,14 +234,12 @@ struct SentryView: View {
                                     .cornerRadius(6)
                                 
                                 Text(entry.endPoint)
-                                    .font(.caption)
-                                    .bold()
+                                    .font(.caption.bold())
                             }
                             Spacer()
                             Text(entry.isCache ? String(localized: "cache") : String(entry.code))
                                 .foregroundColor(entry.isCache ? .green : entry.code.color())
-                                .font(.subheadline)
-                                .bold()
+                                .font(.subheadline.bold())
                         }
                         
                         Text(entry.url)
@@ -302,8 +305,7 @@ struct SentryView: View {
                 ForEach(statsData) { item in
                     VStack {
                         Text(item.value)
-                            .font(.caption)
-                            .bold()
+                            .font(.caption.bold())
                             .foregroundStyle(item.color)
                         Text(item.title)
                             .font(.caption)
@@ -321,8 +323,7 @@ struct SentryView: View {
                         .cornerRadius(6)
                         .annotation(position: .trailing) {
                             Text(item.value)
-                                .font(.caption2)
-                                .bold()
+                                .font(.caption2.bold())
                         }
                 }
                 .listRowSeparator(.hidden)
@@ -334,10 +335,11 @@ struct SentryView: View {
             } label: {
                 HStack {
                     Text("statistics")
-                        .bold()
+                        .font(.caption.bold())
                     Spacer()
                     HStack {
                         Text(showChart ? "hide" : "more")
+                            .font(.caption)
                         Image(systemName: showChart ? "chevron.up" : "chevron.down")
                     }
                 }
@@ -376,8 +378,7 @@ struct SentryView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center) {
                         Text(entry.endPoint)
-                            .font(.caption)
-                            .bold()
+                            .font(.caption.bold())
                         Spacer()
                         Text(isCached ? "cached" : "notCached")
                             .font(.caption)
@@ -546,8 +547,7 @@ fileprivate struct SentryDetailView: View {
                     Spacer()
                     Text(entry.isCache ? String(localized: "cache") : String(entry.code))
                         .foregroundColor(entry.isCache ? .green : entry.code.color())
-                        .font(.subheadline)
-                        .bold()
+                        .font(.subheadline.bold())
                 }
                 .padding(.vertical, 4)
                 
@@ -573,8 +573,7 @@ fileprivate struct SentryDetailView: View {
         } header: {
             HStack {
                 Text("request")
-                    .font(.caption)
-                    .bold()
+                    .font(.caption.bold())
                 Spacer()
                 Text("\(Int(entry.elapsed * 1000)) ms")
                     .font(.caption2)
@@ -610,8 +609,7 @@ fileprivate struct SentryDetailView: View {
         } header: {
             HStack {
                 Text("url")
-                    .font(.caption)
-                    .bold()
+                    .font(.caption.bold())
                 Spacer()
                 if let queryItems, !queryItems.isEmpty {
                     Text("\(queryItems.count) param\(queryItems.count > 1 ? "s" : "")")
@@ -636,8 +634,7 @@ fileprivate struct SentryDetailView: View {
             } header: {
                 HStack {
                     Text("headers")
-                        .font(.caption)
-                        .bold()
+                        .font(.caption.bold())
                     if hasAuth {
                         Image(systemName: "lock.fill")
                             .font(.caption)
@@ -670,8 +667,7 @@ fileprivate struct SentryDetailView: View {
             } header: {
                 HStack {
                     Text("body")
-                        .font(.caption)
-                        .bold()
+                        .font(.caption.bold())
                     Spacer()
                     Text("\(body.count) bytes")
                         .font(.caption2)
@@ -683,21 +679,24 @@ fileprivate struct SentryDetailView: View {
     
     // MARK: - Response
     var responseSection: some View {
-        Section {
-            Text(entry.response.prettyPrint().truncated(4000))
-                .font(.caption)
-                .lineLimit(nil)
-        } header: {
-            HStack {
-                Text("response")
+        
+        guard let response = entry.response, !response.isEmpty else { return AnyView(EmptyView()) }
+        
+        return AnyView(
+            Section {
+                Text(entry.response.prettyPrint().truncated(4000))
                     .font(.caption)
-                    .bold()
-                Spacer()
-                Text("\(entry.response?.count ?? 0) bytes")
-                    .font(.caption2)
-            }
-        }
-        .copyable(text: entry.response.prettyPrint().truncated(4000))
+                    .lineLimit(nil)
+            } header: {
+                HStack {
+                    Text("response")
+                        .font(.caption.bold())
+                    Spacer()
+                    Text("\(response.count) bytes")
+                        .font(.caption2)
+                }
+            }.copyable(text: entry.response.prettyPrint().truncated(4000))
+        )
     }
 }
 

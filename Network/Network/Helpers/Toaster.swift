@@ -13,8 +13,8 @@ final class Toaster: ObservableObject {
     static let shared = Toaster()
     
     // MARK: - Properties
-    @Published var message: String = ""
-    @Published var isShowing: Bool = false
+    @Published fileprivate var message: String = ""
+    @Published fileprivate var isShowing: Bool = false
     
     // MARK: - Toast
     func show(_ message: String, duration: TimeInterval = 3) {
@@ -39,9 +39,10 @@ struct ToastView: View {
         if manager.isShowing {
             HStack(spacing: 14) {
                 Image(systemName: isAnimated ? "checkmark.circle" : "square.on.square")
-                    .font(.system(size: 20))
-                    .symbolRenderingMode(.hierarchical)
+                    .font(.system(size: 18))
+                    .frame(width: 20, alignment: .center)
                     .contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating))
+                    .foregroundStyle(isAnimated ? .purple : .primary)
                 Text(manager.message)
                     .font(.footnote)
                     .foregroundStyle(.secondary)

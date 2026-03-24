@@ -89,8 +89,7 @@ struct HomeView: View {
                                 )
                             Spacer()
                             Text(String(product.price ?? 0))
-                                .font(.subheadline)
-                                .bold()
+                                .font(.subheadline.bold())
                                 .foregroundColor(.green)
                                 .lineLimit(1)
                             
