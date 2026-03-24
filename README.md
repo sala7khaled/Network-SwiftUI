@@ -1,4 +1,6 @@
-
+<p align="center">
+  <img src="Screenshots/Cover.png" height="400">
+</p>
 
 # 🛜 Network SwiftUI
 A fully SwiftUI-based iOS networking layer with robust API handling, live image caching, and integrated Sentry logging for monitoring requests and errors. Designed to simplify API calls, provide detailed console logs, and handle errors gracefully.
