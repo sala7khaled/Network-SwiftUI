@@ -2,7 +2,7 @@
 
 A fully SwiftUI-based iOS networking layer with robust API handling, live image caching, and integrated Sentry logging for monitoring requests and errors. Designed to simplify API calls, provide detailed console logs, and handle errors gracefully.
 
-## Features ✨
+## Features
 - [x] 📡 **Async/Await Networking**: Modern Swift concurrency support.
 - [x] 📦 **Automatic JSON encoding/decoding**: Uses `Encodable` and `Decodable`.
 - [x] 🚩 **Error handling**: Unified APIError mapping and logging.
@@ -10,6 +10,40 @@ A fully SwiftUI-based iOS networking layer with robust API handling, live image 
 - [x] 🏁 **Pagination support**: Efficiently loads more data when scrolling.
 - [x] 💿 **Request caching**: Handles offline scenarios automatically.
 - [x] 🖼 **Image caching**: Async image loading with in-memory caching.
+
+<br>
+
+#### Project Structure
+```swift
+Network-SwiftUI
+│
+├── Network/
+│   │
+│   ├── Core/
+│   │   ├── API.swift
+│   │   ├── Components.swift
+│   │   ├── Generic.swift
+│   │   ├── Network.swift
+│   │   └── Network + Image.swift
+│   │
+│   ├── Extensions/
+│   │   ├── Extensions.swift
+│   │   └── URLRequest.swift
+│   │
+│   ├── Helpers/
+│   │   ├── Connectivity.swift
+│   │   ├── Console.swift
+│   │   └── Sentry.swift
+│   │
+│   └── UseCase/
+│       ├── Repo.swift
+│       └── Service.swift
+│
+├── App/
+├── Assets/
+├── Scenes/
+└── etc.../
+```
 
 <br>
 <br>
@@ -94,16 +128,18 @@ enum Service: ServiceProtocol {
 <br>
 
 
-## 🛜 Sentry Integration 
+## Sentry Integration 
+All API calls, responses, and errors are automatically logged to **Sentry** via the `SentryManager`.
+<br>
+This provides full observability for networking in development environments.
 
-All API calls, responses, and errors are automatically logged to **Sentry** via the `SentryManager`. This helps track:
+- [x] 🚀 API success/failure events
+- [x] 🕒 Request durations
+- [x] 📊 Statistics with chart
+- [x] 🐞 Errors and backend failure messages
+- [x] 📦 Response payloads
 
-- 🚀 API success/failure events
-- 🕒 Request durations
-- 🐞 Errors and backend failure messages
-- 📦 Response payloads
 
-This provides full observability for networking in production and development environments.
 
 #### Sentry
 <p align="start">
