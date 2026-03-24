@@ -23,24 +23,24 @@ Network-SwiftUI
 ├── Network/
 │   │
 │   ├── Core/
-│   │   ├── API.swift                  # Defines API endpoints and request configurations
-│   │   ├── Components.swift           # Reusable networking components (headers, params, etc.)
-│   │   ├── Generic.swift              # Generic models or helpers for network responses
-│   │   ├── Network.swift              # Handles requests, response decoding, error mapping, and caching
-│   │   └── Network + Image.swift      # Networking utilities specific to image downloading
+│   │   ├── API.swift              # Defines API endpoints and request configurations
+│   │   ├── Components.swift       # Reusable networking components (headers, params, etc.)
+│   │   ├── Generic.swift          # Generic models or helpers for network responses
+│   │   ├── Network.swift          # Handles requests, response decoding, error mapping
+│   │   └── NetworkImage.swift     # Networking utilities specific to image downloading
 │   │
 │   ├── Extensions/
-│   │   ├── Extensions.swift           # Common Swift extensions used across the network layer
-│   │   └── URLRequest.swift           # Extension for building URLRequests & URLComponents
+│   │   ├── Extensions.swift       # Common Swift extensions used across the network layer
+│   │   └── URLRequest.swift       # Extension for building URLRequests & URLComponents
 │   │
 │   ├── Helpers/
-│   │   ├── Connectivity.swift         # Checks device's internet connection status
-│   │   ├── Console.swift              # Logs requests, responses, errors, Sentry entry, and images
-│   │   └── Sentry.swift               # API requests reporting / crash logging
+│   │   ├── Connectivity.swift     # Checks device's internet connection status
+│   │   ├── Console.swift          # Logs requests, responses, errors, and Sentry entry
+│   │   └── Sentry.swift           # API requests reporting / crash logging
 │   │
 │   └── UseCase/
-│       ├── Repo.swift                 # Repository layer for data fetching & abstraction
-│       └── Service.swift              # Implementation of service calls for each endpoint
+│       ├── Repo.swift             # Repository layer for data fetching & abstraction
+│       └── Service.swift          # Implementation of service calls for each endpoint
 │
 ├── App/
 ├── Assets/
