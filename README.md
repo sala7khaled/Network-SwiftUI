@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Screenshots/g1.png" height="400">
+  <img src="Screenshots/cover.png" height="400">
 </p>
 
 # 🛜 Network SwiftUI
