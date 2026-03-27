@@ -15,7 +15,8 @@ open class Console {
                     data: Data?,
                     code: Int,
                     elapsed: TimeInterval = 0,
-                    error: APIError? = nil) {
+                    error: APIError? = nil,
+                    expected: String = "") {
         
         let url = request?.url?.absoluteString ?? (service.url + service.path)
         let headers = (request?.allHTTPHeaderFields ?? [:]).prettyPrint()
@@ -24,11 +25,11 @@ open class Console {
         let ms = Int(elapsed * 1000).formatted(.number.grouping(.automatic))
         
         print("\n" + separator)
-        log("\(Connectivity.isOnline() ? "🛜" : "⚠️") \(service.method.rawValue)", url)
+        log("\(Connectivity.shared.isOnline ? "🛜" : "⚠️") \(service.method.rawValue)", url)
         log("🧩 Headers", "\n\(headers)")
         log("📦 Body", body == "" ? "{ }" : "\n\(body ?? "")")
         log("#️⃣ Status code", code)
-        log("📂 Response", "(\(ms) ms) \n\(response)")
+        log("📂 Response", "\(expected) (\(ms) ms) \n\(response)")
         
         
         let path = url.replacingOccurrences(of: API.baseUrl, with: "")
@@ -59,7 +60,7 @@ open class Console {
                                 body: request?.httpBody,
                                 response: data ?? Data(),
                                 error: error,
-                                isCache: !Connectivity.isOnline() && code == 200)
+                                isCache: !Connectivity.shared.isOnline && code == 200)
         SentryManager.shared.addRequest(entry)
     }
     

@@ -1,5 +1,5 @@
 //
-//  AppDelegate.swift
+//  AppView.swift
 //  Network
 //
 //  Created by Salah Khaled on 28/02/2026.
@@ -8,13 +8,11 @@
 import SwiftUI
 
 @main
-struct AppDelegate: App {
+struct AppView: App {
     
-    @State private var showSentry = false
+    @State private var showSentry = true
     
-    init() {
-        Connectivity.start()
-    }
+    init() { Connectivity.shared.start() }
     
     var body: some Scene {
         WindowGroup {
@@ -30,6 +28,10 @@ struct AppDelegate: App {
                         .overlay(alignment: .top) {
                             ToastView()
                         }
+                        
+                }
+                .overlay(alignment: .top) {
+                    ToastView()
                 }
         }
     }

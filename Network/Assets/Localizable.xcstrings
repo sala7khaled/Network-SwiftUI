@@ -82,16 +82,6 @@
         }
       }
     },
-    "cache" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cache"
-          }
-        }
-      }
-    },
     "cached" : {
       "localizations" : {
         "en" : {
@@ -337,11 +327,34 @@
       }
     },
     "notCached" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not Cached"
+          }
+        }
+      }
+    },
+    "offline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection!"
+          }
+        }
+      }
+    },
+    "online" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re back online!"
           }
         }
       }
@@ -383,6 +396,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Response"
+          }
+        }
+      }
+    },
+    "result" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Result"
           }
         }
       }

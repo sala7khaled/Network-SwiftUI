@@ -225,19 +225,12 @@ struct SentryView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(alignment: .center) {
                             HStack {
-                                Text(entry.method.rawValue)
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(.gray.opacity(0.2))
-                                    .cornerRadius(6)
-                                
-                                Text(entry.endPoint)
+                                TextChip(title: entry.method.rawValue)
+                                Text(entry.endPoint.capitalized)
                                     .font(.caption.bold())
                             }
                             Spacer()
-                            Text(entry.isCache ? String(localized: "cache") : String(entry.code))
+                            Text(entry.isCache ? String(localized: "cached") : String(entry.code))
                                 .foregroundColor(entry.isCache ? .green : entry.code.color())
                                 .font(.subheadline.bold())
                         }
@@ -377,17 +370,11 @@ struct SentryView: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center) {
-                        Text(entry.endPoint)
+                        Text(entry.endPoint.capitalized)
                             .font(.caption.bold())
                         Spacer()
-                        Text(isCached ? "cached" : "notCached")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(isCached ? .green.opacity(0.2) : .red.opacity(0.2))
-                            .cornerRadius(6)
-                            .foregroundStyle(isCached ? .green : .red)
+                        TextChip(title: isCached ? "cached" : "notCached",
+                                 color: isCached ? .green : .red)
                     }
                     
                     Text(entry.url)
@@ -415,7 +402,7 @@ struct SentryView: View {
         }
         .sheet(item: $selectedImage) { entry in
             if let image = URL(string: entry.url).flatMap({ Network.shared.imageCache[$0] }) {
-                ImageViewer(title: entry.endPoint, image: image)
+                ImageViewer(title: entry.endPoint.capitalized, image: image)
                     .presentationDetents([.medium])
             }
         }
@@ -489,35 +476,68 @@ fileprivate struct SentryDetailView: View {
     
     // MARK: - Body
     var body: some View {
-        NavigationView {
-            List {
-                requestSection
-                urlSection
-                headersSection
-                bodySection
-                responseSection
-            }
-            .scrollIndicators(.hidden)
-            .listStyle(.insetGrouped)
-            .navigationTitle(entry.endPoint)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        UIPasteboard.general.string = entry.curlString
-                        Toaster.shared.show(String(localized: "copiedClipboard"))
-                        
-                    } label: {
-                        Image(systemName: "curlybraces")
-                            .font(.system(size: 15))
-                    }
-                }
+        
+        GeometryReader { geometry in
+            NavigationSplitView {
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15))
+                let isPortrait = geometry.size.height > geometry.size.width
+                
+                /// Portrait
+                List {
+                    requestSection
+                    urlSection
+                    headersSection
+                    bodySection
+                    if isPortrait {
+                        responseSection
                     }
                 }
+                .scrollIndicators(.hidden)
+                .listStyle(.insetGrouped)
+                .navigationTitle(entry.endPoint.capitalized)
+                .navigationSplitViewStyle(.balanced)
+                .toolbar {
+                    curlToolbar
+                    if(isPortrait) {
+                        closeToolbar
+                    }
+                }
+            } detail: {
+                List {
+                    responseSection
+                }
+                .scrollIndicators(.hidden)
+                .listStyle(.insetGrouped)
+                .toolbarRole(.browser)
+                .navigationTitle("result")
+                .toolbar {
+                    closeToolbar
+                }
+            }
+            .navigationViewStyle(.columns)
+        }
+    }
+    
+    // MARK: - Toolbar
+    @ToolbarContentBuilder
+    var curlToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarLeading) {
+            Button {
+                UIPasteboard.general.string = entry.curlString
+                Toaster.shared.show(String(localized: "copiedClipboard"))
+            } label: {
+                Image(systemName: "curlybraces")
+                    .font(.system(size: 15))
+            }
+        }
+    }
+    
+    @ToolbarContentBuilder
+    var closeToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 15))
             }
         }
     }
@@ -525,27 +545,21 @@ fileprivate struct SentryDetailView: View {
     // MARK: - Request
     var requestSection: some View {
         
-        let copyText = "[\(entry.method)] \(entry.endPoint) (code: \(entry.code))"
+        let copyText = "[\(entry.method)] \(entry.endPoint.capitalized) (code: \(entry.code))"
         let hasError = entry.error != nil
         
         return Section {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     HStack {
-                        Text(entry.method.rawValue)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(.gray.opacity(0.2))
-                            .cornerRadius(6)
-                        Text(entry.endPoint)
+                        TextChip(title: entry.method.rawValue)
+                        Text(entry.endPoint.capitalized)
                             .font(.caption)
                             .lineLimit(nil)
                             .padding(.vertical, 4)
                     }
                     Spacer()
-                    Text(entry.isCache ? String(localized: "cache") : String(entry.code))
+                    Text(entry.isCache ? String(localized: "cached") : String(entry.code))
                         .foregroundColor(entry.isCache ? .green : entry.code.color())
                         .font(.subheadline.bold())
                 }
@@ -554,14 +568,7 @@ fileprivate struct SentryDetailView: View {
                 if let error = entry.error {
                     Divider()
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(error.type.rawValue.capitalized)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(.red.opacity(0.2))
-                            .foregroundStyle(.red)
-                            .cornerRadius(6)
+                        TextChip(title: error.type.rawValue.capitalized, color: .red)
                         Text(error.localize())
                             .font(.caption)
                             .lineLimit(nil)
@@ -679,9 +686,6 @@ fileprivate struct SentryDetailView: View {
     
     // MARK: - Response
     var responseSection: some View {
-        
-        guard let response = entry.response, !response.isEmpty else { return AnyView(EmptyView()) }
-        
         return AnyView(
             Section {
                 Text(entry.response.prettyPrint().truncated(4000))
@@ -692,7 +696,7 @@ fileprivate struct SentryDetailView: View {
                     Text("response")
                         .font(.caption.bold())
                     Spacer()
-                    Text("\(response.count) bytes")
+                    Text("\(entry.response?.count ?? 0) bytes")
                         .font(.caption2)
                 }
             }.copyable(text: entry.response.prettyPrint().truncated(4000))
@@ -753,14 +757,11 @@ fileprivate struct ChipListView: View {
         FlexibleView(items: items, itemSpace: itemSpace) { item in
             HStack(spacing: 6) {
                 Text(item.key)
-                    .font(.system(size: 10))
-                    .fontWeight(.medium)
-                    .lineLimit(1)
                 Text(item.value)
-                    .font(.system(size: 10))
                     .foregroundColor(item.value == "__" ? .red : .secondary)
-                    .lineLimit(1)
             }
+            .lineLimit(1)
+            .font(.system(size: 10, weight: .medium))
             .padding(.horizontal, itemSpace)
             .padding(.vertical, 6)
             .background(.gray.opacity(0.2))
@@ -859,6 +860,7 @@ fileprivate struct ImageViewer: View {
                     }
                 }
         }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -883,5 +885,21 @@ fileprivate extension SentryEntry {
         components.append("\"\(url)\"")
         
         return components.joined(separator: " \\\n  ")
+    }
+}
+
+// MARK: - TextChip
+fileprivate struct TextChip: View {
+    let title: String
+    var color: Color = .gray
+    
+    var body: some View {
+        Text(String(localized: String.LocalizationValue(title)))
+            .font(.caption.weight(.medium))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.2))
+            .if(color != .gray) { $0.foregroundStyle(color) }
+            .cornerRadius(6)
     }
 }

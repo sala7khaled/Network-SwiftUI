@@ -1,5 +1,5 @@
 //
-//  Generic.swift
+//  Extensions.swift
 //  Networking
 //
 //  Created by Salah Khaled on 03/03/2026.
@@ -207,6 +207,7 @@ fileprivate struct CopyableModifier: ViewModifier {
         ? String(localized: "copiedClipboard")
         : (title + " " + String(localized: "copiedClipboard").lowercased())
         
-        Toaster.shared.show(message)
+        Toaster.shared.show(type: .default, message)
+//        Toaster.shared.show(type: .default("square.on.square"), message)
     }
 }

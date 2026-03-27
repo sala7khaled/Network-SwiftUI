@@ -39,13 +39,13 @@ final class Network {
             
             let result: T = try mapResponse(response: httpResponse, with: data)
             let elapsed = Date().timeIntervalSince(startTime)
-            Console.log(service: service, request: request, data: data, code: httpResponse.statusCode, elapsed: elapsed)
+            Console.log(service: service, request: request, data: data, code: httpResponse.statusCode, elapsed: elapsed, expected: "\(T.self)")
             return result
         } catch {
             let apiError = mapError(error)
             
             let elapsed = Date().timeIntervalSince(startTime)
-            Console.log(service: service, request: request, data: nil, code: apiError.code, elapsed: elapsed, error: apiError)
+            Console.log(service: service, request: request, data: nil, code: apiError.code, elapsed: elapsed, error: apiError, expected: "\(T.self)")
             throw apiError
         }
     }
@@ -95,7 +95,7 @@ final class Network {
 private extension Network {
     private func cachePolicy(_ isCache: Bool) -> URLRequest.CachePolicy {
         return isCache
-        ? (Connectivity.isOnline() ? .reloadIgnoringCacheData : .returnCacheDataDontLoad)
+        ? (Connectivity.shared.isOnline ? .reloadIgnoringCacheData : .returnCacheDataDontLoad)
         : .reloadIgnoringCacheData
     }
     

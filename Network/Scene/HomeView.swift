@@ -27,6 +27,7 @@ struct HomeView: View {
                     }
                 }
         }
+        .navigationViewStyle(.stack)
     }
     
     // MARK: - Product View
@@ -98,14 +99,14 @@ struct HomeView: View {
                 }
                 .task {
                     if product.id == viewModel.products.dropLast(4).last?.id {
+                        
                         await viewModel.loadMoreProducts()
+                        
                     }
                 }
             }
             .scrollIndicators(.automatic)
-            .refreshable {
-                Task { await viewModel.fetchProducts() }
-            }
+            .refreshable { Task { await viewModel.fetchProducts() } }
         }
     }
 }
