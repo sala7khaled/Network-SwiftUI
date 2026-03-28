@@ -32,17 +32,14 @@ final class SentryManager: ObservableObject {
     @Published private(set) var requests: [SentryEntry] = []
     @Published private(set) var images: [SentryEntry] = []
     
-    /// Request
-    func addRequest(_ entry: SentryEntry) {
+    func add(_ entry: SentryEntry, to list: SentryView.SentryTab) {
         DispatchQueue.main.async {
-            self.requests.insert(entry, at: 0)
-        }
-    }
-    
-    /// Image
-    func addImage(_ entry: SentryEntry) {
-        DispatchQueue.main.async {
-            self.images.insert(entry, at: 0)
+            switch list {
+            case .requests:
+                self.requests.insert(entry, at: 0)
+            case .images:
+                self.images.insert(entry, at: 0)
+            }
         }
     }
     
@@ -56,7 +53,7 @@ final class SentryManager: ObservableObject {
 struct SentryView: View {
     
     // MARK: - Models
-    private enum SentryTab: Int, CaseIterable, Identifiable {
+    enum SentryTab: Int, CaseIterable, Identifiable {
         case requests = 0
         case images = 1
         
@@ -87,12 +84,12 @@ struct SentryView: View {
     // MARK: - Properties
     @ObservedObject private var manager = SentryManager.shared
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedEntry: SentryEntry? = nil
-    @State private var selectedImage: SentryEntry? = nil
+    @State private var selectedEntry: SentryEntry?
     @State private var sentryTab: SentryTab = .requests
     @State private var searchText = ""
     @State private var selectedMethod: HTTPMethod? = nil
     @State private var showChart = false
+    @State private var isPortrait = true
     
     
     // MARK: - Init
@@ -102,177 +99,200 @@ struct SentryView: View {
     
     // MARK: - Body
     var body: some View {
-        NavigationView {
-            content
-            .navigationTitle("sentry")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Menu {
-                        Picker("selectTab", selection: $sentryTab) {
-                            ForEach(SentryTab.allCases) { tab in
-                                Label(String(localized: String.LocalizationValue(tab.title)), systemImage: tab.icon)
-                                    .tag(tab)
-                            }
+        GeometryReader { geo in
+            Group {
+                if isPortrait {
+                    NavigationView {
+                        List {
+                            chartSection
+                            currentSection
+                        }
+                        .scrollIndicators(.hidden)
+                        .listStyle(.insetGrouped)
+                        .navigationTitle("sentry")
+                        .toolbar { mainToolbar }
+                        .modifier(SearchModifier(searchText: $searchText, selectedMethod: $selectedMethod))
+                        .modifier(SheetModifier(selectedEntry: $selectedEntry, sentryTab: $sentryTab))
+                    }
+                } else {
+                    NavigationSplitView {
+                        List {
+                            chartSection
+                        }
+                        .scrollIndicators(.hidden)
+                        .listStyle(.insetGrouped)
+                        .toolbarRole(.browser)
+                        .navigationSubtitle("statistics")
+                        .background(Color(uiColor: .systemGroupedBackground).opacity(0.6))
+                        .if(sentryTab == .images) {
+                            $0.navigationSplitViewStyle(.prominentDetail)
                         }
                         
-                        Button(role: .destructive) { manager.clear() } label: {
-                            Label("clearHistory", systemImage: "trash")
+                    } detail: {
+                        List {
+                            currentSection
                         }
-                    } label: {
-                        Image(systemName: sentryTab.icon)
-                            .font(.system(size: 15))
+                        .scrollIndicators(.hidden)
+                        .listStyle(.insetGrouped)
+                        .navigationTitle("sentry")
+                        .toolbar { mainToolbar }
+                        .modifier(SearchModifier(searchText: $searchText, selectedMethod: $selectedMethod))
+                        .modifier(SheetModifier(selectedEntry: $selectedEntry, sentryTab: $sentryTab))
                     }
-                }
-                
-                if sentryTab == .requests {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Menu {
-                            Section {
-                                Button("all") { selectedMethod = nil }
-                            }
-                            Picker("selectMethod", selection: $selectedMethod) {
-                                ForEach(HTTPMethod.allCases, id: \.self) { method in
-                                    Text(method.rawValue)
-                                        .tag(method)
-                                }
-                            }
-                        } label: {
-                            
-                            HStack {
-                                Image(systemName: "antenna.radiowaves.left.and.right")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .symbolRenderingMode(selectedMethod != nil ? .multicolor : .hierarchical)
-                                    .if(selectedMethod != nil) { $0.symbolEffect(.variableColor) }
-                                
-                                if let method = selectedMethod {
-                                    Text(method.rawValue)
-                                        .font(.caption.bold())
-                                        .padding(.trailing, 6)
-                                }
-                            }
-                            
-                        }
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15))
-                    }
+                    .navigationTitle("sentry")
+                    .toolbar { mainToolbar }
                 }
             }
-            .searchable(text: $searchText, placement: .automatic, prompt: "search")
-            .searchScopes($selectedMethod) {
-                Text("all").tag(nil as HTTPMethod?)
-                    .font(.footnote)
-                ForEach(HTTPMethod.allCases, id: \.self) { method in
-                    Text(method.rawValue).tag(method as HTTPMethod?)
-                        .font(.footnote)
-                }
+            .onAppear {
+                isPortrait = geo.size.height > geo.size.width
+            }
+            .onChange(of: geo.size) { _, newSize in
+                isPortrait = newSize.height > newSize.width
             }
         }
+        
     }
     
     
     // MARK: - Content
     @ViewBuilder
-    private var content: some View {
+    private var currentSection: some View {
         let isEmpty = sentryTab == .requests
         ? requestArray.isEmpty
         : imageArray.isEmpty
         
         if isEmpty {
-            emptyListView
+            emptySection
         } else {
             switch sentryTab {
-            case .requests: requestList
-            case .images: imageList
+            case .requests: requestSection
+            case .images: imageSection
             }
         }
     }
     
-    // MARK: - Empty View
-    @ViewBuilder
-    var emptyListView: some View {
-        let title = String(localized: String.LocalizationValue(sentryTab.title)).lowercased()
-        
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: sentryTab == .requests ? "network.slash" : "rectangle.slash")
-                .foregroundStyle(.red)
-                .padding()
-                .background(.red.opacity(0.2))
-                .cornerRadius(16)
-            VStack {
-                Text(.emptyTitle(title))
-                Text(.emptyDesc)
-            }
-            .foregroundStyle(.secondary)
-            .font(.caption)
-            Spacer()
-        }
-    }
     
-    // MARK: - Request List
-    @ViewBuilder
-    var requestList: some View {
+    // MARK: - Modifiers
+    private struct SearchModifier: ViewModifier {
+        @Binding var searchText: String
+        @Binding var selectedMethod: HTTPMethod?
         
-        List {
-            statSection
-            Section {
-                ForEach(requestArray) { entry in
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(alignment: .center) {
-                            HStack {
-                                TextChip(title: entry.method.rawValue)
-                                Text(entry.endPoint.capitalized)
-                                    .font(.caption.bold())
-                            }
-                            Spacer()
-                            Text(entry.isCache ? String(localized: "cached") : String(entry.code))
-                                .foregroundColor(entry.isCache ? .green : entry.code.color())
-                                .font(.subheadline.bold())
-                        }
-                        
-                        Text(entry.url)
+        func body(content: Content) -> some View {
+            content
+                .searchable(text: $searchText, placement: .automatic, prompt: "search")
+                .searchScopes($selectedMethod) {
+                    Text("all").tag(nil as HTTPMethod?)
+                        .font(.footnote)
+                    
+                    ForEach(HTTPMethod.allCases, id: \.self) { method in
+                        Text(method.rawValue)
+                            .tag(method as HTTPMethod?)
                             .font(.footnote)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                        
-                        HStack {
-                            if let error = entry.error {
-                                Text(error.type.rawValue.capitalized)
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(.red)
-                            }
-                            Text("\(Int(entry.elapsed * 1000)) ms")
-                            Spacer()
-                            Text("\(entry.time.formatted(date: .omitted, time: .standard))")
-                        }
-                        .font(.caption2)
-                        .foregroundColor(.gray)
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture { selectedEntry = entry }
-                    .copyable(title: String(localized: "curl"),
-                              text: entry.curlString,
-                              icon: "curlybraces.square.fill")
+                }
+        }
+    }
+    
+    private struct SheetModifier: ViewModifier {
+        @Binding var selectedEntry: SentryEntry?
+        @Binding var sentryTab: SentryTab
+        
+        func body(content: Content) -> some View {
+            content
+                .sheet(item: $selectedEntry) { entry in
+                    if sentryTab == .requests {
+                        SentryDetailView(entry: entry)
+                            .presentationDetents([.medium, .large])
+                        
+                    } else if sentryTab == .images, let image = URL(string: entry.url).flatMap({ Network.shared.imageCache[$0] }) {
+                        ImageViewer(title: entry.endPoint.capitalized, image: image)
+                            .presentationDetents([.medium])
+                    }
+                }
+        }
+    }
+    
+    // MARK: - Toolbar
+    @ToolbarContentBuilder
+    private var mainToolbar: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarLeading) {
+            Menu {
+                Picker("selectTab", selection: $sentryTab) {
+                    ForEach(SentryTab.allCases) { tab in
+                        Label(String(localized: String.LocalizationValue(tab.title)), systemImage: tab.icon)
+                            .tag(tab)
+                    }
+                }
+                
+                Button(role: .destructive) { manager.clear() } label: {
+                    Label("clearHistory", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: sentryTab.icon)
+            }
+        }
+        
+        if sentryTab == .requests {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Menu {
+                    Button("all") { selectedMethod = nil }
+                    
+                    Picker("selectMethod", selection: $selectedMethod) {
+                        ForEach(HTTPMethod.allCases, id: \.self) { method in
+                            Text(method.rawValue).tag(method)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                            .font(.system(size: 15, weight: .semibold))
+                            .symbolRenderingMode(selectedMethod != nil ? .multicolor : .hierarchical)
+                            .if(selectedMethod != nil) { $0.symbolEffect(.variableColor) }
+                        
+                        if let method = selectedMethod {
+                            Text(method.rawValue)
+                                .font(.caption.bold())
+                                .padding(.trailing, 6)
+                        }
+                    }
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .sheet(item: $selectedEntry) { entry in
-            SentryDetailView(entry: entry)
-                .presentationDetents([.medium, .large])
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+            }
         }
-        
     }
+    
+    // MARK: - Empty Section
+    @ViewBuilder
+    var emptySection: some View {
+        let title = String(localized: String.LocalizationValue(sentryTab.title)).lowercased()
+        
+        Section {
+            HStack {
+                Spacer()
+                VStack(spacing: 16) {
+                    Image(systemName: sentryTab == .requests ? "network.slash" : "rectangle.slash")
+                        .foregroundStyle(.red)
+                    VStack {
+                        Text(.emptyTitle(title))
+                        Text(.emptyDesc)
+                    }
+                    .foregroundStyle(.secondary)
+                    .font(.caption)
+                }
+                Spacer()
+            }
+        }
+        .listRowBackground(Color.clear)
+    }
+    
     
     // MARK: - Stat Section
     @ViewBuilder
-    var statSection: some View {
+    var chartSection: some View {
         
         let total = requestArray.count
         let successCount = requestArray.filter { (200...299).contains($0.code) }.count
@@ -309,7 +329,7 @@ struct SentryView: View {
             }
             .contentShape(Rectangle())
             
-            if showChart {
+            if !isPortrait || showChart {
                 Chart(chartData) { item in
                     BarMark(x: .value("value", Double(item.value) ?? 0), y: .value("type", item.title))
                         .foregroundStyle(item.color)
@@ -320,61 +340,50 @@ struct SentryView: View {
                         }
                 }
                 .listRowSeparator(.hidden)
+                .frame(maxHeight: 100)
             }
             
         } header: {
-            Button {
-                withAnimation(.linear(duration: 0)) { showChart.toggle() }
-            } label: {
-                HStack {
-                    Text("statistics")
-                        .font(.caption.bold())
-                    Spacer()
+            if isPortrait {
+                Button {
+                    withAnimation(.linear(duration: 0)) { showChart.toggle() }
+                } label: {
                     HStack {
-                        Text(showChart ? "hide" : "more")
-                            .font(.caption)
-                        Image(systemName: showChart ? "chevron.up" : "chevron.down")
-                    }
-                }
-                .font(.caption)
-            }
-            .buttonStyle(.plain)
-        }
-        .onTapGesture { withAnimation(.linear(duration: 0)) { showChart.toggle() } }
-    }
-    
-    // MARK: - Request List
-    @ViewBuilder
-    var imageList: some View {
-        List(imageArray) { entry in
-            
-            let cachedImage = URL(string: entry.url).flatMap { Network.shared.imageCache[$0] }
-            let isCached = cachedImage != nil
-            
-            HStack(alignment: .center, spacing: 16) {
-                
-                Group {
-                    if let image = cachedImage {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                    } else {
-                        Image(systemName: "photo.badge.exclamationmark.fill")
-                            .symbolRenderingMode(.multicolor)
-                    }
-                }
-                .frame(width: 84, height: 84)
-                .background(.thinMaterial)
-                .cornerRadius(10)
-                .onTapGesture { selectedImage = entry }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .center) {
-                        Text(entry.endPoint.capitalized)
+                        Text("statistics")
                             .font(.caption.bold())
                         Spacer()
-                        TextChip(title: isCached ? "cached" : "notCached",
-                                 color: isCached ? .green : .red)
+                        HStack {
+                            Text(showChart ? "hide" : "more")
+                                .font(.caption)
+                            Image(systemName: showChart ? "chevron.up" : "chevron.down")
+                        }
+                    }
+                    .font(.caption)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .onTapGesture { withAnimation(.linear(duration: 0)) { if isPortrait { showChart.toggle() } }
+        }
+    }
+    
+    
+    // MARK: - Request Section
+    @ViewBuilder
+    var requestSection: some View {
+        Section {
+            ForEach(requestArray) { entry in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .center) {
+                        HStack {
+                            TextChip(title: entry.method.rawValue)
+                            Text(entry.endPoint.capitalized)
+                                .font(.caption.bold())
+                        }
+                        Spacer()
+                        Text(entry.isCache ? String(localized: "cached") : String(entry.code))
+                            .foregroundColor(entry.isCache ? .green : entry.code.color())
+                            .font(.subheadline.bold())
                     }
                     
                     Text(entry.url)
@@ -396,14 +405,72 @@ struct SentryView: View {
                     .font(.caption2)
                     .foregroundColor(.gray)
                 }
-               
+                .contentShape(Rectangle())
+                .onTapGesture { selectedEntry = entry }
+                .copyable(title: String(localized: "curl"),
+                          text: entry.curlString,
+                          icon: "curlybraces.square.fill")
             }
-            .copyable(text: entry.url)
         }
-        .sheet(item: $selectedImage) { entry in
-            if let image = URL(string: entry.url).flatMap({ Network.shared.imageCache[$0] }) {
-                ImageViewer(title: entry.endPoint.capitalized, image: image)
-                    .presentationDetents([.medium])
+    }
+    
+    // MARK: - Request Section
+    @ViewBuilder
+    var imageSection: some View {
+        
+        Section {
+            ForEach(imageArray) { entry in
+                let cachedImage = URL(string: entry.url).flatMap { Network.shared.imageCache[$0] }
+                let isCached = cachedImage != nil
+                
+                HStack(alignment: .center, spacing: 16) {
+                    Group {
+                        if let image = cachedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            Image(systemName: "photo.badge.exclamationmark.fill")
+                                .symbolRenderingMode(.multicolor)
+                        }
+                    }
+                    .frame(width: 84, height: 84)
+                    .background(.thinMaterial)
+                    .cornerRadius(10)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .center) {
+                            Text(entry.endPoint.capitalized)
+                                .font(.caption.bold())
+                            Spacer()
+                            TextChip(title: isCached ? "cached" : "notCached",
+                                     color: isCached ? .green : .red)
+                        }
+                        
+                        Text(entry.url)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                        
+                        HStack {
+                            if let error = entry.error {
+                                Text(error.type.rawValue.capitalized)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.red)
+                            }
+                            Text("\(Int(entry.elapsed * 1000)) ms")
+                            Spacer()
+                            Text("\(entry.time.formatted(date: .omitted, time: .standard))")
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                    }
+                    
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { selectedEntry = entry }
+                .copyable(text: entry.url)
             }
         }
     }
@@ -433,31 +500,31 @@ struct SentryView: View {
     
     static var preview: SentryManager {
         let manager = SentryManager.shared
-        manager.addRequest(SentryEntry(url: "https://www.site.com/login?param=value",
-                                       endPoint: "login",
-                                       method: .GET,
-                                       headers: ["Accept": "application/json",
-                                                 "Accept-Language": "en",
-                                                 "Build": "application/json",
-                                                 "Content-Type": "1",
-                                                 "Device-Id": "8B6055A7-EE9F-4017-B8DE-ED0D14B01CA5",
-                                                 "Platform": "iOS",
-                                                 "Version": "1.0"],
-                                       code: 200,
-                                       elapsed: 10,
-                                       time: Date(),
-                                       response: Data("Sample response".utf8),
-                                       isCache: false))
+        manager.add(SentryEntry(url: "https://www.site.com/login?param=value",
+                                endPoint: "login",
+                                method: .GET,
+                                headers: ["Accept": "application/json",
+                                          "Accept-Language": "en",
+                                          "Build": "application/json",
+                                          "Content-Type": "1",
+                                          "Device-Id": "8B6055A7-EE9F-4017-B8DE-ED0D14B01CA5",
+                                          "Platform": "iOS",
+                                          "Version": "1.0"],
+                                code: 200,
+                                elapsed: 10,
+                                time: Date(),
+                                response: Data("Sample response".utf8),
+                                isCache: false), to: .requests)
         
-        manager.addImage(SentryEntry(url: "https://cdn.dummyjson.com/product-images/beauty/red-lipstick/thumbnail.webp",
-                                     endPoint: "thumbnail.webp",
-                                     method: .GET,
-                                     headers: [:],
-                                     code: 200,
-                                     elapsed: 0.07251596450805664,
-                                     time: Date(),
-                                     body: nil,
-                                     response: nil, error: nil))
+        manager.add(SentryEntry(url: "https://cdn.dummyjson.com/product-images/beauty/red-lipstick/thumbnail.webp",
+                                endPoint: "thumbnail.webp",
+                                method: .GET,
+                                headers: [:],
+                                code: 200,
+                                elapsed: 0.07251596450805664,
+                                time: Date(),
+                                body: nil,
+                                response: nil, error: nil), to: .images)
         return manager
     }
 }
@@ -467,20 +534,18 @@ struct SentryView: View {
 }
 
 
-// MARK: - Sentry Detail
+// MARK: - Sentry Detail ------------------------------------------------------------------------------
 fileprivate struct SentryDetailView: View {
     
-    // MARK: - Properties
     let entry: SentryEntry
     @Environment(\.dismiss) private var dismiss
     
-    // MARK: - Body
     var body: some View {
         
-        GeometryReader { geometry in
+        GeometryReader { geo in
             NavigationSplitView {
                 
-                let isPortrait = geometry.size.height > geometry.size.width
+                let isPortrait = geo.size.height > geo.size.width
                 
                 /// Portrait
                 List {

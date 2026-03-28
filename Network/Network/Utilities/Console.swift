@@ -50,6 +50,7 @@ open class Console {
         }
         
         // MARK: - Sentry
+        for _ in 0 ... 10 {
         let entry = SentryEntry(url: url,
                                 endPoint: endPoint,
                                 method: service.method,
@@ -61,7 +62,11 @@ open class Console {
                                 response: data ?? Data(),
                                 error: error,
                                 isCache: !Connectivity.shared.isOnline && code == 200)
-        SentryManager.shared.addRequest(entry)
+        
+        
+            SentryManager.shared.add(entry, to: .requests)
+        }
+        
     }
     
     static func log(_ tag: String, _ text: Any) {
@@ -94,6 +99,6 @@ open class Console {
             response: data,
             error: error as? APIError
         )
-        SentryManager.shared.addImage(entry)
+        SentryManager.shared.add(entry, to: .images)
     }
 }
