@@ -290,29 +290,55 @@ struct SentryView: View {
     }
     
     
-    // MARK: - Stat Section
+    // MARK: - Chart Section
     @ViewBuilder
     var chartSection: some View {
         
-        let total = requestArray.count
-        let successCount = requestArray.filter { (200...299).contains($0.code) }.count
-        let success = total == 0 ? 0 : Int((Double(successCount) / Double(total)) * 100)
-        let avgTime = requestArray.isEmpty ? 0 : requestArray.map(\.elapsed).reduce(0, +) / Double(total)
-        let totalTime = requestArray.map(\.elapsed).reduce(0, +)
+        let entries = sentryTab == .requests ? requestArray : imageArray
+        let total = entries.count
+        let totalTime = entries.map(\.elapsed).reduce(0, +)
+        let avgTime = total == 0 ? 0 : totalTime / Double(total)
         
+        /// Requests
+        let successCount = entries.filter { (200...299).contains($0.code) }.count
+        let successPercent = total == 0 ? 0 : Int((Double(successCount) / Double(total)) * 100)
+        
+        /// Images
+        let cachedCount = entries.filter {
+            guard let url = URL(string: $0.url) else { return false }
+            return Network.shared.imageCache[url] != nil
+        }.count
+        
+        let cachedPercent = total == 0 ? 0 : Int((Double(cachedCount) / Double(total)) * 100)
+        
+        /// Statistics
         let statsData: [StatItem] = [
-            .init(title: String(localized: "requests"), value: "\(total)"),
-            .init(title: String(localized: "success"), value: "\(success)%"),
+            .init(title: String(localized: sentryTab == .requests ? "requests" : "images"), value: "\(total)"),
+            .init(title: String(localized: sentryTab == .requests ? "success" : "cached"), value: sentryTab == .requests ? "\(successPercent)%" : "\(cachedPercent)%"),
             .init(title: String(localized: "avgTime"), value: Int(avgTime * 1000).formatted() + " ms"),
             .init(title: String(localized: "total"), value: Int(totalTime * 1000).formatted() + " ms")
         ]
         
-        let chartData: [StatItem] = [
-            .init(title: String(localized: "requests"), value: String(total), color: .blue),
-            .init(title: String(localized: "success"), value: String(successCount), color: .green),
-            .init(title: String(localized: "failed"), value: String(total - successCount), color: .red)
-        ]
+        /// Chart Data
+        let chartData: [StatItem] = {
+            switch sentryTab {
+            case .requests:
+                return [
+                    .init(title: String(localized: "requests"), value: String(total), color: .blue),
+                    .init(title: String(localized: "success"), value: String(successCount), color: .green),
+                    .init(title: String(localized: "failed"), value: String(total - successCount), color: .red)
+                ]
+                
+            case .images:
+                return [
+                    .init(title: String(localized: "images"), value: String(total), color: .blue),
+                    .init(title: String(localized: "cached"), value: String(cachedCount), color: .green),
+                    .init(title: String(localized: "notCached"), value: String(total - cachedCount), color: .red)
+                ]
+            }
+        }()
         
+        /// View
         Section {
             HStack {
                 ForEach(statsData) { item in
@@ -363,7 +389,8 @@ struct SentryView: View {
                 .buttonStyle(.plain)
             }
         }
-        .onTapGesture { withAnimation(.linear(duration: 0)) { if isPortrait { showChart.toggle() } }
+        .if(isPortrait) {
+            $0.onTapGesture { withAnimation(.linear(duration: 0)) { showChart.toggle() } }
         }
     }
     
