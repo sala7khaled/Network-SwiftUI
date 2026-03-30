@@ -45,7 +45,7 @@ Network-SwiftUI
 ├── App/
 ├── Assets/
 ├── Scenes/
-└── Etc...
+└── ...
 ```
 
 <br>
