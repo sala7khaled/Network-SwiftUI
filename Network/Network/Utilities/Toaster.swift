@@ -8,6 +8,23 @@
 import SwiftUI
 import Combine
 
+
+// MARK: - Modifier
+extension View {
+    func toaster() -> some View { modifier(ToastModifier()) }
+}
+
+fileprivate struct ToastModifier: ViewModifier {
+    
+    func body(content: Content) -> some View {
+        content
+            .window {
+                if let scene = $0?.windowScene { ToastManager.shared.setup(scene: scene)}
+            }
+    }
+}
+
+// MARK: - Entry
 enum ToastEntry: Equatable {
     
     case `default`
@@ -45,11 +62,15 @@ final class Toaster: ObservableObject {
     // MARK: - Properties
     private var currentTask: DispatchWorkItem?
     @Published fileprivate var message: String = ""
-    @Published var isShowing: Bool = false
+    @Published fileprivate var isShowing: Bool = false
     @Published fileprivate var type: ToastEntry = .default
     
     // MARK: - Toast
-    func show(type: ToastEntry = .default, _ message: String, _ duration: TimeInterval = 3) {
+    func show(_ message: String, _ duration: TimeInterval = 3) {
+        show(.default, message, duration)
+    }
+    
+    func show(_ type: ToastEntry, _ message: String, _ duration: TimeInterval = 3) {
         if isShowing, type == self.type { return }
 
         currentTask?.cancel()
@@ -126,19 +147,39 @@ struct ToastView: View {
 }
 
 
-// MARK: - Modifier
-private struct ToastModifier: ViewModifier {
+// MARK: - Window Helper
+fileprivate final class ToastManager {
+    static let shared = ToastManager()
+    private var toastWindow: UIWindow?
     
-    func body(content: Content) -> some View {
-        content
-            .overlay(alignment: .top) {
-                ToastView()
-            }
+    func setup(scene: UIWindowScene) {
+        let window = UIWindow(windowScene: scene)
+        let rootView = Color.clear.ignoresSafeArea().overlay(alignment: .top) { ToastView() }
+        window.rootViewController = UIHostingController(rootView: rootView)
+        window.rootViewController?.view.backgroundColor = .clear
+        window.windowLevel = .alert + 1
+        window.isUserInteractionEnabled = false
+        window.makeKeyAndVisible()
+        toastWindow = window
     }
 }
 
-extension View {
-    func toaster() -> some View {
-        modifier(ToastModifier())
+fileprivate extension View {
+    func window(_ callback: @escaping (UIWindow?) -> Void) -> some View {
+        background(HostingWindowFinder(callback: callback))
     }
+}
+
+fileprivate struct HostingWindowFinder: UIViewRepresentable {
+    var callback: (UIWindow?) -> Void
+    
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        DispatchQueue.main.async { [weak view] in
+            self.callback(view?.window)
+        }
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {}
 }

@@ -207,7 +207,6 @@ fileprivate struct CopyableModifier: ViewModifier {
         ? String(localized: "copiedClipboard")
         : (title + " " + String(localized: "copiedClipboard").lowercased())
         
-        Toaster.shared.show(type: .default, message)
-//        Toaster.shared.show(type: .default("square.on.square"), message)
+        Toaster.shared.show(.copy, message)
     }
 }

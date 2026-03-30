@@ -49,7 +49,7 @@ final class Connectivity {
         let type: ToastEntry = status == .satisfied ? .online : .offline
         let message = String(localized: status == .satisfied ? "online" : "offline")
         
-        Toaster.shared.show(type: type, message)
+        Toaster.shared.show(type, message)
         
 //        switch status {
 //        case .satisfied:

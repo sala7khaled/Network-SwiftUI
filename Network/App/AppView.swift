@@ -16,6 +16,7 @@ struct AppView: App {
         WindowGroup {
             HomeView()
                 .sentry()
+                .toaster()
         }
     }
 }
