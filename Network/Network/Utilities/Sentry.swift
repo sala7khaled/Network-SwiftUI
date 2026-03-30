@@ -102,7 +102,7 @@ struct SentryView: View {
         GeometryReader { geo in
             Group {
                 if isPortrait {
-                    NavigationView {
+                    NavigationStack {
                         List {
                             chartSection
                             currentSection
@@ -572,7 +572,7 @@ fileprivate struct SentryDetailView: View {
         GeometryReader { geo in
             Group {
                 if isPortrait {
-                    NavigationView {
+                    NavigationStack {
                         List {
                             requestSection
                             urlSection
@@ -583,7 +583,6 @@ fileprivate struct SentryDetailView: View {
                         .scrollIndicators(.hidden)
                         .listStyle(.insetGrouped)
                         .navigationTitle(entry.endPoint.capitalized)
-                        .toolbar(removing: .sidebarToggle)
                         .toolbar {
                             curlToolbar
                             closeToolbar
@@ -599,19 +598,19 @@ fileprivate struct SentryDetailView: View {
                                 bodySection
                             }
                             .scrollIndicators(.hidden)
-                            .listStyle(.insetGrouped)
+                            .toolbar(.hidden)
                             .toolbar(removing: .sidebarToggle)
+                            .listStyle(.insetGrouped)
                         } detail: {
                             List {
                                 responseSection
                             }
-                            .scrollIndicators(.hidden)
                             .listStyle(.insetGrouped)
+                            .scrollIndicators(.hidden)
                             .toolbar(.hidden)
                             .toolbar(removing: .sidebarToggle)
                             .contentMargins(.top, 0, for: .scrollContent)
                         }
-                        .toolbar(removing: .sidebarToggle)
                         .navigationTitle(entry.endPoint.capitalized)
                         .toolbar {
                             curlToolbar
