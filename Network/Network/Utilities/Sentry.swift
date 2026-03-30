@@ -175,7 +175,7 @@ struct SentryView: View {
     }
     
     
-    // MARK: - Modifiers
+    // MARK: - Search Modifier
     private struct SearchModifier: ViewModifier {
         @Binding var searchText: String
         @Binding var selectedMethod: HTTPMethod?
@@ -196,6 +196,7 @@ struct SentryView: View {
         }
     }
     
+    // MARK: - Sheet Modifier
     private struct SheetModifier: ViewModifier {
         @Binding var selectedEntry: SentryEntry?
         @Binding var sentryTab: SentryTab
@@ -206,7 +207,6 @@ struct SentryView: View {
                     if sentryTab == .requests {
                         SentryDetailView(entry: entry)
                             .presentationDetents([.large])
-                        
                     } else if sentryTab == .images, let image = URL(string: entry.url).flatMap({ Network.shared.imageCache[$0] }) {
                         ImageViewer(title: entry.endPoint.capitalized, image: image)
                             .presentationDetents([.medium])
@@ -592,15 +592,15 @@ fileprivate struct SentryDetailView: View {
                     NavigationStack {
                         NavigationSplitView {
                             List {
-                                requestSection.padding(.top, 10)
+                                requestSection
                                 urlSection
                                 headersSection
                                 bodySection
                             }
+                            .listStyle(.insetGrouped)
                             .scrollIndicators(.hidden)
                             .toolbar(.hidden)
                             .toolbar(removing: .sidebarToggle)
-                            .listStyle(.insetGrouped)
                         } detail: {
                             List {
                                 responseSection
@@ -691,6 +691,7 @@ fileprivate struct SentryDetailView: View {
                 Text("\(Int(entry.elapsed * 1000)) ms")
                     .font(.caption2)
             }
+            .padding(.top, 10)
         }
         .if(hasError) {
             $0.copyable(title: String(localized: "error"),
@@ -706,7 +707,6 @@ fileprivate struct SentryDetailView: View {
         let queryItems = URLComponents(string: entry.url)?.queryItems
         
         return Section {
-            
             VStack(alignment: .leading, spacing: 10) {
                 Text(API.baseUrl + entry.endPoint)
                     .font(.caption)
