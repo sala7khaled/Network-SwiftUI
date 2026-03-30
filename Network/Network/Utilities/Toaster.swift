@@ -11,8 +11,8 @@ import Combine
 enum ToastEntry: Equatable {
     
     case `default`
-    case success(_ icon: String? = nil)
-    case error(_ icon: String? = nil)
+    case success(_ icon: String?)
+    case error(_ icon: String?)
     case copy
     case online
     case offline
@@ -45,7 +45,7 @@ final class Toaster: ObservableObject {
     // MARK: - Properties
     private var currentTask: DispatchWorkItem?
     @Published fileprivate var message: String = ""
-    @Published fileprivate var isShowing: Bool = false
+    @Published var isShowing: Bool = false
     @Published fileprivate var type: ToastEntry = .default
     
     // MARK: - Toast
@@ -123,4 +123,22 @@ struct ToastView: View {
     }()
     
     ToastView(manager: toaster)
+}
+
+
+// MARK: - Modifier
+private struct ToastModifier: ViewModifier {
+    
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .top) {
+                ToastView()
+            }
+    }
+}
+
+extension View {
+    func toaster() -> some View {
+        modifier(ToastModifier())
+    }
 }

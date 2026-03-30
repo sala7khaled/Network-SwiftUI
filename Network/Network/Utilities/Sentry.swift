@@ -9,7 +9,25 @@ import SwiftUI
 import Combine
 import Charts
 
-// MARK: - Model
+
+// MARK: - Modifier
+extension View {
+    func sentry() -> some View { modifier(SentryModifier()) }
+}
+
+fileprivate struct SentryModifier: ViewModifier {
+    @State private var showSentry = false
+    
+    func body(content: Content) -> some View {
+        content
+        #if DEBUG
+            .onLongPressGesture(minimumDuration: 0.2) { showSentry.toggle()}
+            .fullScreenCover(isPresented: $showSentry) { SentryView() }
+        #endif
+    }
+}
+
+// MARK: - Entry
 struct SentryEntry: Identifiable {
     let id = UUID()
     let url: String
@@ -153,6 +171,7 @@ struct SentryView: View {
             }
             .onAppear { isPortrait = geo.size.height > geo.size.width }
             .onChange(of: geo.size) { _, newSize in isPortrait = newSize.height > newSize.width }
+//            .overlay(alignment: .top) { ToastView() }
         }
     }
     
@@ -1009,4 +1028,3 @@ fileprivate struct TextChip: View {
             .cornerRadius(6)
     }
 }
-
