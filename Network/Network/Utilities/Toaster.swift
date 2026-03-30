@@ -50,10 +50,10 @@ final class Toaster: ObservableObject {
     
     // MARK: - Toast
     func show(type: ToastEntry = .default, _ message: String, _ duration: TimeInterval = 3) {
+        if isShowing, type == self.type { return }
 
         currentTask?.cancel()
         self.isShowing = false
-
         self.type = type
         self.message = message
         

@@ -110,47 +110,50 @@ struct SentryView: View {
                         .scrollIndicators(.hidden)
                         .listStyle(.insetGrouped)
                         .navigationTitle("sentry")
+                        .toolbar(removing: .sidebarToggle)
                         .toolbar { mainToolbar }
                         .modifier(SearchModifier(searchText: $searchText, selectedMethod: $selectedMethod))
                         .modifier(SheetModifier(selectedEntry: $selectedEntry, sentryTab: $sentryTab))
                     }
-                } else {
-                    NavigationSplitView {
-                        List {
-                            chartSection
+                } else { // Landscape
+                    NavigationStack {
+                        NavigationSplitView {
+                            VStack(alignment: .center, spacing: 20) {
+                                Text("statistics")
+                                    .font(.caption)
+                                    .opacity(0.5)
+                                    .padding(.top, 20)
+                                Divider()
+                                    .ignoresSafeArea()
+                                chartSection
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom, 20)
+                                
+                            }
+                            .toolbar(removing: .sidebarToggle)
+                            .ignoresSafeArea(.keyboard, edges: .bottom)
+                            
+                        } detail: {
+                            List {
+                                currentSection
+                            }
+                            .scrollIndicators(.hidden)
+                            .listStyle(.insetGrouped)
+                            .contentMargins(.top, 0, for: .scrollContent)
+                            .toolbar(.hidden)
+                            .toolbar(removing: .sidebarToggle)
+                            .modifier(SearchModifier(searchText: $searchText, selectedMethod: $selectedMethod))
+                            .modifier(SheetModifier(selectedEntry: $selectedEntry, sentryTab: $sentryTab))
                         }
-                        .scrollIndicators(.hidden)
-                        .listStyle(.insetGrouped)
-                        .toolbarRole(.browser)
-                        .navigationSubtitle("statistics")
-                        .background(Color(uiColor: .systemGroupedBackground).opacity(0.6))
-                        .if(sentryTab == .images) {
-                            $0.navigationSplitViewStyle(.prominentDetail)
-                        }
-                        
-                    } detail: {
-                        List {
-                            currentSection
-                        }
-                        .scrollIndicators(.hidden)
-                        .listStyle(.insetGrouped)
                         .navigationTitle("sentry")
                         .toolbar { mainToolbar }
-                        .modifier(SearchModifier(searchText: $searchText, selectedMethod: $selectedMethod))
-                        .modifier(SheetModifier(selectedEntry: $selectedEntry, sentryTab: $sentryTab))
                     }
-                    .navigationTitle("sentry")
-                    .toolbar { mainToolbar }
+                    
                 }
             }
-            .onAppear {
-                isPortrait = geo.size.height > geo.size.width
-            }
-            .onChange(of: geo.size) { _, newSize in
-                isPortrait = newSize.height > newSize.width
-            }
+            .onAppear { isPortrait = geo.size.height > geo.size.width }
+            .onChange(of: geo.size) { _, newSize in isPortrait = newSize.height > newSize.width }
         }
-        
     }
     
     
@@ -202,7 +205,7 @@ struct SentryView: View {
                 .sheet(item: $selectedEntry) { entry in
                     if sentryTab == .requests {
                         SentryDetailView(entry: entry)
-                            .presentationDetents([.medium, .large])
+                            .presentationDetents([.large])
                         
                     } else if sentryTab == .images, let image = URL(string: entry.url).flatMap({ Network.shared.imageCache[$0] }) {
                         ImageViewer(title: entry.endPoint.capitalized, image: image)
@@ -308,7 +311,6 @@ struct SentryView: View {
             guard let url = URL(string: $0.url) else { return false }
             return Network.shared.imageCache[url] != nil
         }.count
-        
         let cachedPercent = total == 0 ? 0 : Int((Double(cachedCount) / Double(total)) * 100)
         
         /// Statistics
@@ -323,24 +325,20 @@ struct SentryView: View {
         let chartData: [StatItem] = {
             switch sentryTab {
             case .requests:
-                return [
-                    .init(title: String(localized: "requests"), value: String(total), color: .blue),
-                    .init(title: String(localized: "success"), value: String(successCount), color: .green),
-                    .init(title: String(localized: "failed"), value: String(total - successCount), color: .red)
-                ]
+                return [.init(title: String(localized: "requests"), value: String(total), color: .blue),
+                        .init(title: String(localized: "success"), value: String(successCount), color: .green),
+                        .init(title: String(localized: "failed"), value: String(total - successCount), color: .red)]
                 
             case .images:
-                return [
-                    .init(title: String(localized: "images"), value: String(total), color: .blue),
-                    .init(title: String(localized: "cached"), value: String(cachedCount), color: .green),
-                    .init(title: String(localized: "notCached"), value: String(total - cachedCount), color: .red)
-                ]
+                return [.init(title: String(localized: "images"), value: String(total), color: .blue),
+                        .init(title: String(localized: "cached"), value: String(cachedCount), color: .green),
+                        .init(title: String(localized: "notCached"), value: String(total - cachedCount), color: .red)]
             }
         }()
         
         /// View
         Section {
-            HStack {
+            HStack(spacing: 2) {
                 ForEach(statsData) { item in
                     VStack {
                         Text(item.value)
@@ -366,7 +364,6 @@ struct SentryView: View {
                         }
                 }
                 .listRowSeparator(.hidden)
-                .frame(maxHeight: 100)
             }
             
         } header: {
@@ -561,52 +558,70 @@ struct SentryView: View {
 }
 
 
-// MARK: - Sentry Detail ------------------------------------------------------------------------------
+// MARK: - Sentry Detail ---------------------------------------------------------------------------------------------
+
+
 fileprivate struct SentryDetailView: View {
     
     let entry: SentryEntry
     @Environment(\.dismiss) private var dismiss
+    @State private var isPortrait = true
     
     var body: some View {
         
         GeometryReader { geo in
-            NavigationSplitView {
-                
-                let isPortrait = geo.size.height > geo.size.width
-                
-                /// Portrait
-                List {
-                    requestSection
-                    urlSection
-                    headersSection
-                    bodySection
-                    if isPortrait {
-                        responseSection
+            Group {
+                if isPortrait {
+                    NavigationView {
+                        List {
+                            requestSection
+                            urlSection
+                            headersSection
+                            bodySection
+                            responseSection
+                        }
+                        .scrollIndicators(.hidden)
+                        .listStyle(.insetGrouped)
+                        .navigationTitle(entry.endPoint.capitalized)
+                        .toolbar(removing: .sidebarToggle)
+                        .toolbar {
+                            curlToolbar
+                            closeToolbar
+                        }
                     }
-                }
-                .scrollIndicators(.hidden)
-                .listStyle(.insetGrouped)
-                .navigationTitle(entry.endPoint.capitalized)
-                .navigationSplitViewStyle(.balanced)
-                .toolbar {
-                    curlToolbar
-                    if(isPortrait) {
-                        closeToolbar
+                } else { // Landscape
+                    NavigationStack {
+                        NavigationSplitView {
+                            List {
+                                requestSection.padding(.top, 10)
+                                urlSection
+                                headersSection
+                                bodySection
+                            }
+                            .scrollIndicators(.hidden)
+                            .listStyle(.insetGrouped)
+                            .toolbar(removing: .sidebarToggle)
+                        } detail: {
+                            List {
+                                responseSection
+                            }
+                            .scrollIndicators(.hidden)
+                            .listStyle(.insetGrouped)
+                            .toolbar(.hidden)
+                            .toolbar(removing: .sidebarToggle)
+                            .contentMargins(.top, 0, for: .scrollContent)
+                        }
+                        .toolbar(removing: .sidebarToggle)
+                        .navigationTitle(entry.endPoint.capitalized)
+                        .toolbar {
+                            curlToolbar
+                            closeToolbar
+                        }
                     }
-                }
-            } detail: {
-                List {
-                    responseSection
-                }
-                .scrollIndicators(.hidden)
-                .listStyle(.insetGrouped)
-                .toolbarRole(.browser)
-                .navigationTitle("result")
-                .toolbar {
-                    closeToolbar
                 }
             }
-            .navigationViewStyle(.columns)
+            .onAppear { isPortrait = geo.size.height > geo.size.width }
+            .onChange(of: geo.size) { _, newSize in isPortrait = newSize.height > newSize.width }
         }
     }
     
@@ -778,19 +793,31 @@ fileprivate struct SentryDetailView: View {
     
     // MARK: - Response
     var responseSection: some View {
+        
+        let responseHeader = {
+            HStack {
+                Text("response")
+                    .font(.caption.bold())
+                Spacer()
+                Text("\(entry.response?.count ?? 0) bytes")
+                    .font(.caption2)
+            }
+        }
+        
         return AnyView(
             Section {
-                Text(entry.response.prettyPrint().truncated(4000))
-                    .font(.caption)
-                    .lineLimit(nil)
-            } header: {
-                HStack {
-                    Text("response")
-                        .font(.caption.bold())
-                    Spacer()
-                    Text("\(entry.response?.count ?? 0) bytes")
-                        .font(.caption2)
+                VStack(spacing: 20) {
+                    if !isPortrait {
+                        responseHeader()
+                            .padding(.horizontal, 10)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(entry.response.prettyPrint().truncated(4000))
+                        .font(.caption)
+                        .lineLimit(nil)
                 }
+            } header: {
+                if isPortrait { responseHeader() }
             }.copyable(text: entry.response.prettyPrint().truncated(4000))
         )
     }
@@ -825,7 +852,7 @@ fileprivate struct ChipItem: Identifiable {
 
 fileprivate struct ChipListView: View {
     private let items: [ChipItem]
-    private let itemSpace: CGFloat = 8
+    private let spacing: CGFloat = 6
     
     init(headers: [String: String]) {
         self.items = headers
@@ -846,15 +873,15 @@ fileprivate struct ChipListView: View {
     }
     
     var body: some View {
-        FlexibleView(items: items, itemSpace: itemSpace) { item in
-            HStack(spacing: 6) {
+        FlexibleView(items: items, spacing: spacing) { item in
+            HStack(spacing: spacing) {
                 Text(item.key)
                 Text(item.value)
                     .foregroundColor(item.value == "__" ? .red : .secondary)
             }
             .lineLimit(1)
             .font(.system(size: 10, weight: .medium))
-            .padding(.horizontal, itemSpace)
+            .padding(.horizontal, spacing)
             .padding(.vertical, 6)
             .background(.gray.opacity(0.2))
             .cornerRadius(6)
@@ -867,28 +894,16 @@ fileprivate struct ChipListView: View {
 fileprivate struct FlexibleView<Data: Collection, Content: View>: View where Data.Element: Identifiable {
     
     let items: Data
-    let itemSpace: CGFloat
     let spacing: CGFloat
     let content: (Data.Element) -> Content
-    
     @State private var maxWidth: CGFloat = 0
-    
-    init(items: Data, itemSpace: CGFloat, spacing: CGFloat = 6,
-         @ViewBuilder content: @escaping (Data.Element) -> Content) {
-        self.items = items
-        self.itemSpace = itemSpace
-        self.spacing = spacing
-        self.content = content
-    }
     
     var body: some View {
         generateContent(in: maxWidth)
             .background(GeometryReader { geo in
                 Color.clear
                     .onAppear { maxWidth = geo.size.width }
-                    .onChange(of: geo.size.width) { _, newWidth in
-                        maxWidth = newWidth
-                    }
+                    .onChange(of: geo.size.width) { _, newWidth in maxWidth = newWidth }
             })
             .padding(.vertical, 2)
     }
@@ -921,9 +936,9 @@ fileprivate struct FlexibleView<Data: Collection, Content: View>: View where Dat
     }
     
     private func estimateWidth(for item: Data.Element) -> CGFloat {
-        let text = (item as? ChipItem).map { $0.key + $0.value } ?? "\(item.id)"
+        let text = (item as? ChipItem).map { $0.key + $0.value } ?? ""
         let attributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10, weight: .medium)] // Same font as ChipItem
-        return text.size(withAttributes: attributes).width + (itemSpace * 2) + itemSpace
+        return text.size(withAttributes: attributes).width + (spacing * 2)
     }
 }
 
@@ -995,3 +1010,4 @@ fileprivate struct TextChip: View {
             .cornerRadius(6)
     }
 }
+

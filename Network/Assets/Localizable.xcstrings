@@ -401,6 +401,7 @@
       }
     },
     "result" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
