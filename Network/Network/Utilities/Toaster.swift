@@ -1,6 +1,6 @@
 //
 //  Toaster.swift
-//  Networking
+//  Networkinging
 //
 //  Created by Salah Khaled on 19/03/2026.
 //
@@ -105,8 +105,7 @@ struct ToastView: View {
                     .frame(width: 20, height: 20, alignment: .center)
                     .if(manager.type == .default) {
                         $0.symbolEffect(.bounce.up.byLayer, options: .repeat(.periodic(delay: 1.0)))
-                    }
-                    .if(manager.type != .default) {
+                    } else: {
                         $0.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating))
                     }
                 Text(manager.message)
@@ -116,8 +115,7 @@ struct ToastView: View {
             .if(manager.type == .default) {
                 $0.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20))
                   .colorInvert()
-            }
-            .if(manager.type != .default) {
+            } else: {
                 $0.colorInvert()
                   .background(manager.type.color, in: RoundedRectangle(cornerRadius: 20))
                 

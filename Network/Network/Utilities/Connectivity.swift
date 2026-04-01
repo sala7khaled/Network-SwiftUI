@@ -1,6 +1,6 @@
 //
 //  Connectivity.swift
-//  Network
+//  Networking
 //
 //  Created by Salah Khaled on 28/02/2026.
 //
@@ -50,16 +50,5 @@ final class Connectivity {
         let message = String(localized: status == .satisfied ? "online" : "offline")
         
         Toaster.shared.show(type, message)
-        
-//        switch status {
-//        case .satisfied:
-//            Toaster.shared.show(type: .online, String(localized: "online"))
-//            
-//        case .unsatisfied, .requiresConnection:
-//            Toaster.shared.show(type: .offline, String(localized: "offline"))
-//            
-//        @unknown default:
-//            break
-//        }
     }
 }

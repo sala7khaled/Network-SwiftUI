@@ -1,6 +1,6 @@
 //
 //  Console.swift
-//  Network
+//  Networking
 //
 //  Created by Salah Khaled on 02/03/2026.
 //
@@ -50,7 +50,6 @@ open class Console {
         }
         
         // MARK: - Sentry
-        for _ in 0 ... 10 {
         let entry = SentryEntry(url: url,
                                 endPoint: endPoint,
                                 method: service.method,
@@ -64,9 +63,7 @@ open class Console {
                                 isCache: !Connectivity.shared.isOnline && code == 200)
         
         
-            SentryManager.shared.add(entry, to: .requests)
-        }
-        
+        SentryManager.shared.add(entry, to: .requests)
     }
     
     static func log(_ tag: String, _ text: Any) {

@@ -1,6 +1,6 @@
 //
 //  Extensions.swift
-//  Networking
+//  Networkinging
 //
 //  Created by Salah Khaled on 03/03/2026.
 //
@@ -154,10 +154,17 @@ extension Int {
 extension View {
     
     @ViewBuilder
-    func `if`<Content: View>(_ condition: Bool, _ transform: (Self) -> Content) -> some View {
-        if condition {
-            transform(self)
-        } else { self }
+    func `if`<IfContent: View>(_ condition: Bool, _ transform: (Self) -> IfContent) -> some View {
+        if condition { transform(self) }
+        else { self }
+    }
+    
+    @ViewBuilder
+    func `if`<IfContent: View, ElseContent: View>(_ condition: Bool,
+                                                  _ transform: (Self) -> IfContent,
+                                                  `else` elseTransform: (Self) -> ElseContent) -> some View {
+        if condition { transform(self) }
+        else { elseTransform(self) }
     }
     
     func copyable(title: String = String(localized: "copy"),
@@ -165,8 +172,9 @@ extension View {
                   color: Color = .blue,
                   icon: String = "square.on.square",
                   enableSwipe: Bool = true,
-                  enableMenu: Bool = true) -> some View {
-        self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon, swipe: enableSwipe, menu: enableMenu))
+                  enableMenu: Bool = true,
+                  type: ToastEntry? = nil) -> some View {
+        self.modifier(CopyableModifier(title: title, text: text, color: color, icon: icon, swipe: enableSwipe, menu: enableMenu, type: type))
     }
 }
 
@@ -178,6 +186,7 @@ fileprivate struct CopyableModifier: ViewModifier {
     let icon: String
     let swipe: Bool
     let menu: Bool
+    let type: ToastEntry?
     
     func body(content: Content) -> some View {
         content
@@ -207,6 +216,6 @@ fileprivate struct CopyableModifier: ViewModifier {
         ? String(localized: "copiedClipboard")
         : (title + " " + String(localized: "copiedClipboard").lowercased())
         
-        Toaster.shared.show(.copy, message)
+        Toaster.shared.show(type ?? .copy, message)
     }
 }

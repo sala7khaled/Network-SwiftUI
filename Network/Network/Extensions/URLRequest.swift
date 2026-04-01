@@ -1,6 +1,6 @@
 //
 //  URLRequest.swift
-//  Network
+//  Networking
 //
 //  Created by Salah Khaled on 28/02/2026.
 //
@@ -24,7 +24,6 @@ extension URLRequest {
               let url = components.url else { return nil }
         
         self.init(url: url, cachePolicy: cachePolicy, timeoutInterval: timeoutInterval)
-        
         httpMethod = service.method.rawValue
         
         addValue(Key.appJson, forHTTPHeaderField: APIHeader.contentType)
@@ -47,9 +46,6 @@ extension URLRequest {
         if let token = UserDefaults.standard.string(forKey: APIHeader.authorization) {
             addValue("\(Key.bearer) \(token)", forHTTPHeaderField: APIHeader.authorization)
         }
-        
-        let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wva2hpZG1hdGRhcmFrLmNvbVwvYXBpXC9sb2dpbiIsImlhdCI6MTc3MjYzNTYyMiwibmJmIjoxNzcyNjM1NjIyLCJqdGkiOiJQSnhWY2h5YnU3WHFEZzU3Iiwic3ViIjoxLCJwcnYiOiJkZmVjYjMxZjkxMWZmMjU0Mjc1OTFiNmY0N2FkMzhhOTUxNjljNGVjIn0.devYDLtsd-X8-8iyzV4b1_Cy0z-BkAlssBn1I87VMNs"
-        addValue("\(Key.bearer) \(token)", forHTTPHeaderField: APIHeader.authorization)
         
         /// Set Headers
         service.headers?.forEach {

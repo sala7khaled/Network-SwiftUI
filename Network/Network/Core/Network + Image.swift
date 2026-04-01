@@ -1,6 +1,6 @@
 //
-//  Network + Image.swift
-//  Networking
+//  Networking + Image.swift
+//  Networkinging
 //
 //  Created by Salah Khaled on 12/03/2026.
 //

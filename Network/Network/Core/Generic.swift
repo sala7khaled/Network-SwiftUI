@@ -1,6 +1,6 @@
 //
 //  Generic.swift
-//  Network
+//  Networking
 //
 //  Created by Salah Khaled on 02/03/2026.
 //
@@ -48,7 +48,5 @@ enum APIErrorType: String {
     case backend
     case unknown
     
-    var localized: String {
-        "error.\(rawValue)"
-    }
+    var localized: String { "error.\(rawValue)" }
 }

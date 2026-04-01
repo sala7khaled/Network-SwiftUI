@@ -716,7 +716,8 @@ fileprivate struct SentryDetailView: View {
             $0.copyable(title: String(localized: "error"),
                         text: "[\(entry.error!.type.rawValue.capitalized)] \(entry.error!.localize())",
                         color: .red,
-                        icon: "exclamationmark.square.fill")
+                        icon: "exclamationmark.square.fill",
+                        type: .error("exclamationmark.circle"))
         }
         .copyable(text: copyText)
     }

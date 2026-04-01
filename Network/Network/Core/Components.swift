@@ -1,6 +1,6 @@
 //
 //  Components.swift
-//  Network
+//  Networking
 //
 //  Created by Salah Khaled on 28/02/2026.
 //

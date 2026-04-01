@@ -1,6 +1,6 @@
 //
 //  HomeViewModel.swift
-//  Network
+//  Networking
 //
 //  Created by Salah Khaled on 01/03/2026.
 //
