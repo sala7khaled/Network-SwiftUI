@@ -20,7 +20,7 @@ struct HomeView: View {
                 .navigationTitle(String(localized: "products"))
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Text("\(viewModel.products.count) / \(viewModel.totalProducts)")
+                        Text("\(viewModel.products.count)" + " / " + "\(viewModel.totalProducts)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .frame(minWidth: 60)

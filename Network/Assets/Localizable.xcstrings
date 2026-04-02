@@ -1,45 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@" : {
-
-    },
-    "%lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld / %2$lld"
-          }
-        }
-      }
-    },
-    "%lld bytes" : {
-
-    },
-    "%lld header%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld Header%2$@"
-          }
-        }
-      }
-    },
-    "%lld ms" : {
-
-    },
-    "%lld param%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld Param%2$@"
-          }
-        }
-      }
-    },
     "all" : {
       "localizations" : {
         "en" : {
@@ -78,6 +39,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Body"
+          }
+        }
+      }
+    },
+    "bytes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bytes"
           }
         }
       }
@@ -264,6 +235,16 @@
         }
       }
     },
+    "header" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Header"
+          }
+        }
+      }
+    },
     "headers" : {
       "localizations" : {
         "en" : {
@@ -326,6 +307,16 @@
         }
       }
     },
+    "ms" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ms"
+          }
+        }
+      }
+    },
     "notCached" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -355,6 +346,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You’re back online!"
+          }
+        }
+      }
+    },
+    "param" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Param"
+          }
+        }
+      }
+    },
+    "params" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Params"
           }
         }
       }
@@ -396,17 +407,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Response"
-          }
-        }
-      }
-    },
-    "result" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Result"
           }
         }
       }

@@ -32,10 +32,8 @@ final class Api {
     // MARK: - Base Url
     var baseUrl: String {
         switch config {
-        case .development:
-            return "https://dummyjson.com/"
-        case .production:
-            return "https://dummyjson.com/"
+        case .development: "https://dummyjson.com/"
+        case .production: "https://dummyjson.com/"
         }
     }
      

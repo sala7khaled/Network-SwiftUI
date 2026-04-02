@@ -20,10 +20,10 @@ fileprivate struct SentryModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-        #if DEBUG
+            #if DEBUG
             .onLongPressGesture(minimumDuration: 0.2) { showSentry.toggle()}
             .fullScreenCover(isPresented: $showSentry) { SentryView() }
-        #endif
+            #endif
     }
 }
 
@@ -171,7 +171,6 @@ struct SentryView: View {
             }
             .onAppear { isPortrait = geo.size.height > geo.size.width }
             .onChange(of: geo.size) { _, newSize in isPortrait = newSize.height > newSize.width }
-//            .overlay(alignment: .top) { ToastView() }
         }
     }
     
@@ -441,9 +440,9 @@ struct SentryView: View {
                                 .fontWeight(.medium)
                                 .foregroundStyle(.red)
                         }
-                        Text("\(Int(entry.elapsed * 1000)) ms")
+                        Text("\(Int(entry.elapsed * 1000))" + "ms")
                         Spacer()
-                        Text("\(entry.time.formatted(date: .omitted, time: .standard))")
+                        Text(entry.time.formatted(date: .omitted, time: .standard))
                     }
                     .font(.caption2)
                     .foregroundColor(.gray)
@@ -502,9 +501,9 @@ struct SentryView: View {
                                     .fontWeight(.medium)
                                     .foregroundStyle(.red)
                             }
-                            Text("\(Int(entry.elapsed * 1000)) ms")
+                            Text("\(Int(entry.elapsed * 1000)) " + String(localized: "ms"))
                             Spacer()
-                            Text("\(entry.time.formatted(date: .omitted, time: .standard))")
+                            Text(entry.time.formatted(date: .omitted, time: .standard))
                         }
                         .font(.caption2)
                         .foregroundColor(.gray)
@@ -707,7 +706,7 @@ fileprivate struct SentryDetailView: View {
                 Text("request")
                     .font(.caption.bold())
                 Spacer()
-                Text("\(Int(entry.elapsed * 1000)) ms")
+                Text("\(Int(entry.elapsed * 1000)) " + String(localized: "ms"))
                     .font(.caption2)
             }
             .padding(.top, 10)
@@ -745,7 +744,7 @@ fileprivate struct SentryDetailView: View {
                     .font(.caption.bold())
                 Spacer()
                 if let queryItems, !queryItems.isEmpty {
-                    Text("\(queryItems.count) param\(queryItems.count > 1 ? "s" : "")")
+                    Text("\(queryItems.count)" + (queryItems.count > 1 ? String(localized: "params") : String(localized: "param")))
                         .font(.caption2)
                 }
             }
@@ -773,7 +772,7 @@ fileprivate struct SentryDetailView: View {
                             .font(.caption)
                     }
                     Spacer()
-                    Text("\(headers.count) header\(headers.count > 1 ? "s" : "")")
+                    Text("\(headers.count)" + (headers.count > 1 ? String(localized: "headers") : String(localized: "header")))
                         .font(.caption2)
                 }
             }
@@ -802,7 +801,7 @@ fileprivate struct SentryDetailView: View {
                     Text("body")
                         .font(.caption.bold())
                     Spacer()
-                    Text("\(body.count) bytes")
+                    Text("\(body.count) " + String(localized: "bytes"))
                         .font(.caption2)
                 }
             }.copyable(text: entry.body.prettyPrint().truncated(500))
@@ -818,7 +817,7 @@ fileprivate struct SentryDetailView: View {
                 Text("response")
                     .font(.caption.bold())
                 Spacer()
-                Text("\(entry.response?.count ?? 0) bytes")
+                Text("\(entry.response?.count ?? 0) " + String(localized: "bytes"))
                     .font(.caption2)
             }
         }
