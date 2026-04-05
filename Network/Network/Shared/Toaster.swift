@@ -109,7 +109,9 @@ struct ToastView: View {
                         $0.contentTransition(.symbolEffect(.replace.magic(fallback: .downUp.byLayer), options: .nonRepeating))
                     }
                 Text(manager.message)
-                    .font(.footnote)
+                    .font(.footnote.weight(.medium))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
             }
             .padding()
             .if(manager.type == .default) {
@@ -118,9 +120,7 @@ struct ToastView: View {
             } else: {
                 $0.colorInvert()
                   .background(manager.type.color, in: RoundedRectangle(cornerRadius: 20))
-                
             }
-            .padding(.top, 10) // Screen padding
             .transition(.move(edge: .top).combined(with: .opacity))
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -128,6 +128,7 @@ struct ToastView: View {
                 }
             }
             .onDisappear { isAnimated = false }
+            .padding(.horizontal)
         }
     }
 }
